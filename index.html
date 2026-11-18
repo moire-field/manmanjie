@@ -1,0 +1,1553 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f8f4eb">
+  <title>慢慢解 · 毛线团</title>
+  <style>
+:root{color-scheme:light;--bg:#f8f5ed;--ink:#3e332d;--muted:#766a5e;--line:#dfd6c8;--paper:#fffcf6;--accent:#884931;--warm:#eedec7;--mono:"Space Mono","SFMono-Regular",Menlo,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "DM Sans","PingFang SC","Microsoft YaHei",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p{margin:0}button{font:inherit;font-weight:650;color:inherit;cursor:pointer;appearance:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:focus-visible,#ball-stage:focus-visible{outline:3px solid #754e32;outline-offset:3px}button:disabled{opacity:.45;cursor:default}button:not(:disabled):active{filter:brightness(.95)}[hidden]{display:none!important}
+.workroom{width:min(1146px,calc(100% - 68px));margin:auto;padding:38px 0 22px}.mast,.identity,.section-title,.ball-id,.mat-head,.view-bar,.view-actions,.thread-selection,.tension-head,.tool-row,.counts,.feedback-line{display:flex;align-items:center}
+.mast,.section-title,.mat-head,.view-bar,.thread-selection,.tension-head,.counts{justify-content:space-between}.mast{margin:0 1px 24px}.identity{gap:14px}.identity canvas{width:64px;height:64px}
+h1{font:700 42px/1.12 "Songti SC","STSong","Noto Serif CJK SC",serif;letter-spacing:.045em;color:#48372e}.identity p{font-size:13px;color:var(--muted);margin-top:5px}
+.plain{border:1px solid #d6cbbd;background:#fbf8f0;border-radius:9px;padding:8px 12px;font-size:13px}.plain:not(:disabled):hover{background:#f0e7d8;border-color:#b9a997}.help-toggle{padding:9px 14px}.question{display:inline-grid;place-items:center;border:1.5px solid currentColor;border-radius:50%;width:16px;height:16px;font:700 11px/1 var(--mono)}
+.bench{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);gap:20px;align-items:stretch}
+.mat{position:relative;min-width:0;display:flex;flex-direction:column;border:1px solid #dbccb7;border-radius:23px;background:#eee2cf;overflow:hidden;box-shadow:0 5px 0 -3px #d6c6af}
+.mat:before{content:"";position:absolute;inset:8px;border:1px dashed #b6a38a80;border-radius:17px;pointer-events:none;z-index:2}
+.mat-head{position:relative;z-index:3;padding:18px 22px 3px;gap:10px}.ball-id{gap:10px;font-size:15px;font-weight:700}.ball-id b{font:700 23px/1 var(--mono);letter-spacing:-.08em}.mat-control{font-size:12px;background:#f8efdf;border-color:#cbbca4;line-height:1.2}.mat-control span{font-size:16px;margin-left:5px}
+.stage-wrap{position:relative;flex:1;min-width:0;display:grid;align-items:center;width:100%}#ball-stage{position:relative;width:100%;height:clamp(360px,38.5vw,476px);touch-action:none;isolation:isolate;outline-offset:-6px}#ball-stage canvas{display:block}
+.view-bar{position:relative;z-index:3;gap:8px;margin:0 22px 15px;color:#66533f;font-size:12px}.view-actions{gap:5px}.view-actions button{border:1px solid #c5b399;background:#f7eddd;border-radius:7px;height:28px;min-width:31px;padding:0 8px;font-size:12px}.view-actions button:nth-child(-n+2){font:20px/1 Georgia,serif}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:23px 24px;align-self:start}.section-title h2{font-size:18px;line-height:1.4;letter-spacing:.01em}.text-action{display:inline-block;background:none;padding:4px 0;border:0;font-size:12px;color:#725338;text-decoration:underline;text-underline-offset:3px;text-decoration-color:#b2997d}
+.swatches{margin:15px 0 8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.swatch{border:1px solid transparent;background:#f6f1e7;padding:4px 0 3px;min-width:0;border-radius:10px;color:#685649;display:flex;align-items:center;flex-direction:column;line-height:1}.swatch[aria-pressed=true]{border:2px solid var(--strand);padding:3px 0 2px;background:#fff9ed;box-shadow:0 2px 0 #e7dbc5}.swatch canvas{width:38px;height:35px;max-width:100%;display:block}.swatch b{font:700 11px/1.3 var(--mono)}.swatch.complete b:after{content:" ✓";font-size:9px}
+.thread-selection{gap:10px;color:var(--muted);font-size:12px}.thread-selection b{font-size:13px;color:#57483e}.pull-section,.total-section{margin-top:18px;padding-top:17px;border-top:1px dashed #d9cdbd}
+.tension-head{font-size:13px;font-weight:600}.tension-head strong{color:#47755f;font-size:12px}.tension-head strong[data-state=warning]{color:#a66b27}.tension-head strong[data-state=knot]{color:#a94434}
+.tension{height:8px;position:relative;background:#ece6d9;border-radius:4px;margin-top:8px;overflow:hidden}.tension i{display:block;width:100%;height:100%;background:#8f9f71;transform:scaleX(0);transform-origin:left}.tension span{position:absolute;left:74%;height:100%;top:0;border-left:1px solid #af9272}
+#feel{min-height:2.9em;color:var(--muted);font-size:13px;line-height:1.45;margin:8px 0 11px}
+.pull{display:flex;justify-content:center;align-items:center;gap:9px;width:100%;border:1px solid #75452e;background:#925137;color:#fff7e7;border-radius:11px;font-size:15px;font-weight:700;min-height:46px;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 2px 0 #673a24}
+.pull:hover{background:#83452e}.pull.held{background:#693c30;box-shadow:inset 0 2px 2px #442d23;transform:translateY(1px)}.pull-glyph{font-size:19px}.knot-action{background:#587562;border-color:#496653;box-shadow:0 2px 0 #3c5344}.follow{width:100%;margin-top:7px}
+.tool-row{margin-top:9px;gap:5px}.tool-row .plain{flex:1;white-space:nowrap;min-width:0;font-size:12px;padding:7px 4px}
+.total-section .section-title h2{font-size:15px}.total-section .section-title strong{font:700 25px/1.2 var(--mono);letter-spacing:-.07em}.total-section small{font-size:13px;margin-left:3px}
+.length-bar{height:6px;background:#e8e4d9;margin:10px 0;border-radius:4px;overflow:hidden}.length-bar i{display:block;height:100%;width:100%;transform-origin:left;transform:scaleX(0);background:#779481}
+.counts{font-size:12px;color:var(--muted)}.counts b{color:var(--ink);font:600 12px/1 var(--mono)}
+.feedback-line{gap:9px;padding:12px 3px 0;font-size:12px;color:var(--muted)}#signal{width:7px;height:7px;border-radius:50%;background:#79917a;flex:none}#signal[data-tone=warn]{background:#b66b42}
+#win{position:absolute;inset:0;display:grid;place-items:center;z-index:4;background:#e9dbc17d}.win-card{width:min(262px,88%);padding:23px;border-radius:16px;background:#fffbf2;box-shadow:0 8px 35px #76674d36;text-align:center}.win-card h2{font:700 28px/1.4 "Songti SC",serif}.win-card p{font-size:13px;margin:8px 0 14px;color:var(--muted)}
+dialog{width:min(420px,calc(100% - 28px));padding:24px;border-radius:17px;border:1px solid var(--line);background:var(--paper);color:var(--ink);max-height:85dvh}dialog::backdrop{background:#4235277a}dialog h3{font-size:15px;margin:16px 0 4px}dialog p{font-size:14px;color:#685c4e}.dismiss{border:0;border-radius:7px;background:#f1e9db;width:32px;height:32px;font-size:22px}.keys{font-size:12px;border-top:1px dashed var(--line);padding-top:11px;margin-top:15px}
+@media(min-width:1450px) and (min-height:880px){.workroom{padding-top:54px}#ball-stage{height:510px}}
+@media(max-width:900px){.workroom{width:calc(100% - 32px);padding-top:25px}.bench{grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr);gap:12px}.panel{padding:16px}.mat-head{padding:14px 16px 0}.view-bar{margin:0 15px 13px}.swatches{gap:3px}}
+#pocket-total{display:none}
+.gauges{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.tight i{background:#a36d50}
+.guide-actions{display:flex;align-items:center;gap:5px}
+.guide-actions button{min-height:30px;border:1px solid #c5b399;border-radius:7px;color:#614b38;background:#f7eddd;padding:4px 8px;font-size:12px}
+#guide[aria-pressed=true]{color:#3b5b4a;background:#e3eada;border-color:#a8b9a6}
+.workroom{padding-bottom:max(22px,env(safe-area-inset-bottom))}
+@media(max-width:680px){
+  body{overscroll-behavior-y:contain}
+  .workroom{width:min(100%,490px);padding:max(5px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+  .mast{min-height:44px;margin:0 3px 6px;gap:8px}
+  .identity{gap:7px}.identity canvas{width:39px;height:39px}h1{font-size:26px}
+  .identity p{display:none}
+  .help-toggle{min-height:44px;padding:4px 8px;font-size:12px;border:0;background:transparent}
+  .question{width:15px;height:15px;font-size:11px}
+  .bench{display:flex;flex-direction:column;gap:8px}.mat{border-radius:15px}.mat:before{inset:4px;border-radius:11px}
+  .mat-head{position:absolute;inset:2px 9px auto 11px;padding:0;pointer-events:none}
+  .mat-head .mat-control{pointer-events:auto;min-height:44px;padding:0 8px;background:transparent;border:0}
+  .ball-id{font-size:12px;gap:6px;line-height:1.2}.ball-id b{font-size:17px}
+  #pocket-total{display:inline-block;font:500 11px/1.4 var(--mono);border-left:1px solid #baa98e;padding-left:8px;color:#695844}
+  #ball-stage{height:clamp(230px,min(88vw,46svh),375px)}
+  .view-bar{margin:0 8px 3px;min-height:44px;font-size:12px}
+  .view-actions,.guide-actions{gap:2px}
+  .view-actions button,.guide-actions button{min-height:44px;min-width:44px;font-size:12px;border:0;background:transparent;border-radius:9px}
+  #guide[aria-pressed=true]{box-shadow:inset 0 0 0 1px #a8b9a6}
+  .view-actions button:nth-child(-n+2){font-size:22px}
+  .panel{width:100%;padding:8px 12px 11px;border-radius:15px}
+  .threads{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"sel title" "spool spool";align-items:center}
+  .threads .section-title{grid-area:title}.threads .section-title h2{display:none}
+  .text-action{min-height:44px;min-width:48px;padding:0 3px}
+  .thread-selection{grid-area:sel;justify-content:flex-start;gap:10px;font-size:11px}
+  .thread-selection b{font-size:13px}
+  .swatches{grid-area:spool;margin:0;gap:5px}
+  .swatch,.swatch[aria-pressed=true]{flex-direction:row;justify-content:center;gap:2px;min-height:45px;padding:3px 0}
+  .swatch canvas{width:29px;height:28px}.swatch b{font-size:11px}
+  .pull-section,.total-section{margin-top:8px;padding-top:8px}
+  .gauges{gap:14px}.tension{margin-top:4px;height:6px}
+  .tension-head,.tension-head strong{font-size:11px}
+  #feel{font-size:12px;line-height:1.4;min-height:1.4em;margin:6px 0}
+  .pull,.plain.follow{min-height:44px}.tool-row{margin-top:4px}
+  .tool-row .plain{min-height:44px;padding:4px 3px}
+  .total-section .section-title strong{font-size:18px}
+  .total-section .section-title h2{font-size:13px}.length-bar{margin:6px 0}
+  .knot-jump{min-height:44px}
+  .feedback-line{padding:5px 2px 0;font-size:11px}
+  .keys{display:none}.dismiss{width:44px;height:44px}
+}
+@media(max-width:680px) and (max-height:660px){
+  .workroom{padding-top:max(2px,env(safe-area-inset-top))}
+  .mast{margin-bottom:3px}.bench{gap:5px}
+  #ball-stage{height:clamp(197px,39svh,250px)}
+  .panel{padding-top:2px}.pull-section{margin-top:5px;padding-top:5px}
+}
+@media(max-height:500px) and (min-width:600px) and (orientation:landscape){
+  .workroom{width:calc(100% - 24px);padding:4px max(5px,env(safe-area-inset-right)) 8px max(5px,env(safe-area-inset-left))}
+  .mast{margin-bottom:5px}.identity canvas{width:33px;height:33px}.identity h1{font-size:24px}.identity p{display:none}
+  .bench{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(246px,1fr);align-items:start}
+  #ball-stage{height:clamp(200px,65svh,320px)}.panel{padding:10px}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0s!important;transition-duration:0s!important}}
+.swatch{position:relative}.swatch[data-knot=tight]::after,.swatch[data-knot=loose]::after{content:"∞";position:absolute;right:-2px;top:-5px;font:700 14px/16px Georgia,serif;width:17px;height:17px;text-align:center;border-radius:50%;background:#97513b;color:#fff8ec;border:1px solid #fff8ec}.swatch[data-knot=loose]::after{background:#527763}.knot-jump{border:0;padding:2px 0;background:transparent;color:#7b4834;font-size:12px;text-decoration:underline;text-underline-offset:3px}.knot-jump:disabled{opacity:1;text-decoration:none;color:var(--muted)}
+
+</style>
+</head>
+<body>
+  <main class="workroom">
+    <header class="mast">
+      <div class="identity"><canvas id="mark" width="128" height="128" aria-hidden="true"></canvas><div><h1>慢慢解</h1><p>捏住线头轻拉，转个角度找松开的方向。</p></div></div>
+      <button class="plain help-toggle" id="help-open" type="button"><span class="question" aria-hidden="true">?</span> 玩法说明</button>
+    </header>
+    <div class="bench">
+      <section class="mat" aria-label="毛线团工作台">
+        <div class="mat-head"><div class="ball-id">毛线团 <b id="ball-number">01</b><span id="pocket-total">已收 0%</span></div><button type="button" id="next-ball" class="plain mat-control">换一团 <span aria-hidden="true">↻</span></button></div>
+        <div class="stage-wrap"><div id="ball-stage" role="group" aria-label="立体毛线团，可旋转、选择并拖动线头"></div>
+          <div id="win" hidden><div class="win-card"><h2>理好了。</h2><p id="win-detail"></p><button type="button" class="pull" id="win-next">再解一团</button></div></div>
+        </div>
+        <div class="view-bar"><div class="guide-actions"><button type="button" id="guide" aria-pressed="true">看拉向</button><button type="button" id="best-angle">侧看线头</button></div><div class="view-actions"><button id="turn-left" type="button" aria-label="向左转动毛线团" title="左转">‹</button><button id="turn-right" type="button" aria-label="向右转动毛线团" title="右转">›</button><button id="view-reset" type="button" aria-label="恢复初始视角">复位</button></div></div>
+      </section>
+
+      <aside class="panel" aria-label="抽线与解结操作">
+        <section class="threads"><div class="section-title"><h2>手里的线</h2><button type="button" class="text-action" id="locate">定位线头</button></div>
+          <div class="swatches" id="palette" role="group" aria-label="选择要抽的毛线"></div>
+          <div class="thread-selection"><b id="selected-name"></b><span id="strand-progress"></span></div>
+        </section>
+        <section class="pull-section">
+          <div class="gauges"><div><div class="tension-head"><span>手上拉力</span><strong id="tension-word">松弛</strong></div>
+          <div class="tension" role="meter" id="tension" aria-label="当前张力" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="tension-fill"></i><span></span></div></div>
+          <div><div class="tension-head"><span>圈口紧度</span><strong id="tight-value">—</strong></div>
+          <div class="tension tight" role="meter" id="tight-meter" aria-label="圈口紧度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="tight-fill"></i></div></div></div>
+          <p id="feel" aria-live="polite">拉出一点，感受线的松紧。</p>
+          <button type="button" class="pull" id="pull"><span class="pull-glyph" aria-hidden="true">↗</span><span id="pull-label">按住抽线</span></button>
+          <button type="button" class="pull knot-action" id="unknot" hidden>挑开结圈</button>
+          <button type="button" class="plain follow" id="follow" hidden></button>
+          <div class="tool-row"><button type="button" class="plain" id="hint">找条松线</button><button type="button" class="plain" id="undo" disabled>撤回一手</button><button type="button" class="plain" id="restart">重来</button></div>
+        </section>
+        <section class="total-section"><div class="section-title"><h2>已收线长</h2><strong id="percent">0<small>%</small></strong></div><div class="length-bar" id="length-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="已理开总线长"><i></i></div>
+          <div class="counts"><span>收完 <b id="done-count">0 / 5</b> 股</span><button type="button" class="knot-jump" id="knot-jump" disabled>待解线结 <b id="knot-count">0</b></button></div>
+        </section>
+      </aside>
+    </div>
+    <div class="feedback-line"><span id="signal"></span><p id="status" role="status">选择球上的线头，或从线轴中选一股。</p></div>
+  </main>
+  <dialog id="help" aria-labelledby="help-title">
+    <div class="section-title"><h2 id="help-title">怎么玩</h2><button id="help-close" type="button" class="dismiss" aria-label="关闭">×</button></div>
+    <h3>一根手指就能玩</h3><p>拖空白处转动球体。捏住带字母的线头轻轻拖，留意交叉处哪几股跟着动。也可以点线轴找回藏在后面的线头。</p>
+    <h3>看拉力，也看圈口</h3><p>在交叉处反向硬拉会勒紧圈口。松手能卸掉手上的力，线圈会保留刚才的紧度。线头旁的箭头指向松口，点「看拉向」可开关箭头。箭头太短时，转动毛线球或点「侧看线头」。</p>
+    <h3>从松口退线</h3><p>在交叉处沿箭头分几次短拖，让圈口一点点松开。也可以先抽松压在上面的线，再回来挑圈。「按住抽线」适合直抽畅通的线段。收回全部五股即完成。</p>
+    <p class="keys">键盘可用 Tab 选择线头或控件，按住空格或回车抽线。</p>
+  </dialog>
+  <noscript>请启用 JavaScript 后开始试玩。</noscript>
+<script>
+// Layered strands on a sphere. Parameters for gates and progress are normalized arc lengths.
+(() => {
+  'use strict';
+  const TAU = 2 * Math.PI, EPS = 1e-9;
+  const TIGHTEN_SECONDS = 1.25, PULL_SPEED = 5.9;
+  const REST_CINCH = .30, KNOT_CINCH = .67;
+  const PALETTE = [
+    ['A','珊瑚','#e9987e'], ['B','麦金','#e6bd65'], ['C','鼠尾草','#87b8a4'],
+    ['D','雾蓝','#8eafd1'], ['E','丁香','#b6a0cc']
+  ];
+  const dot = (a,b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const cross = (a,b) => [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const unit = a => { const n=Math.hypot(...a); return a.map(x=>x/n); };
+  const mix = (a,b,t) => a.map((x,i)=>x+(b[i]-x)*t);
+  const dist = (a,b) => Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+  const clamp = (n,lo,hi) => Math.max(lo,Math.min(hi,n));
+  function randomFor(seed) {
+    let a=seed>>>0;
+    return () => {
+      let t=a=(a+0x6d2b79f5)>>>0;
+      t=Math.imul(t^t>>>15,t|1);
+      t^=t+Math.imul(t^t>>>7,t|61);
+      return ((t^t>>>14)>>>0)/4294967296;
+    };
+  }
+  function measure(strand) {
+    const marks=[0]; let sum=0;
+    for(let i=1;i<strand.points.length;i++) {
+      sum+=dist(strand.points[i-1],strand.points[i]); marks.push(sum);
+    }
+    strand.length=sum; strand.distances=marks.map(m=>m/sum);
+    return strand;
+  }
+  function bracket(strand,t) {
+    let lo=0,hi=strand.distances.length-1;
+    while(hi-lo>1) {
+      const m=(lo+hi)>>1;
+      if(strand.distances[m]<=t) lo=m; else hi=m;
+    }
+    return lo;
+  }
+  function pointAt(strand,t) {
+    t=clamp(t,0,1);
+    const i=bracket(strand,t), a=strand.distances[i], b=strand.distances[i+1];
+    return mix(strand.points[i],strand.points[i+1],(t-a)/(b-a));
+  }
+
+  function wind(random) {
+    const normals=[[0.08,0.95,.28],[.87,.18,.45],[-.51,.31,.8],[.63,.71,-.31],[-.53,.64,-.56]];
+    const lanes=[0,1,2,3,4];
+    for(let i=lanes.length-1;i;i--) {const j=Math.floor(random()*(i+1)); [lanes[i],lanes[j]]=[lanes[j],lanes[i]];}
+    return PALETTE.map(([id,name,color],s) => {
+      const axis=unit(normals[s].map(v=>v+(random()-.5)*.31));
+      const e=unit(cross(axis,Math.abs(axis[1])>.85?[1,0,0]:[0,1,0])), f=cross(axis,e);
+      const phase=TAU*random(), wiggle=TAU*random(), turns=7.4+1.6*random();
+      const handed=random()<.5?-1:1, n=Math.ceil(turns*54), points=[];
+      for(let i=0;i<=n;i++) {
+        const t=i/n, a=handed*TAU*turns*t+phase;
+        // Neighboring laps form a recognizable winding band with a small hand-laid wobble.
+        const lat=-.72+1.44*t+.09*Math.sin(TAU*t+wiggle)+.055*Math.sin(2*a+wiggle);
+        const er=Math.cos(lat), h=Math.sin(lat), x=er*Math.cos(a), y=er*Math.sin(a);
+        // A strictly ordered laying clock gives a constructive global extraction order.
+        const rank=.73*t+.27*lanes[s]/4;
+        const r=1.032-.275*rank;
+        points.push(e.map((v,k)=>r*(v*x+f[k]*y+axis[k]*h)));
+      }
+      return measure({id,name,color,points,crossings:[]});
+    });
+  }
+
+  function arcSegments(strand) {
+    const dirs=strand.points.map(unit);
+    return dirs.slice(0,-1).map((a,i)=>{
+      const b=dirs[i+1], normal=cross(a,b), mid=mix(a,b,.5), half=dist(a,b)*.5;
+      return {i,a,b,normal,mid,half};
+    });
+  }
+  // Intersect minor angular arcs on the sphere. Radial ordering at their shared
+  // direction tells us which actual piece of yarn is above the other one.
+  function gatesFor(strands) {
+    const parts=strands.map(arcSegments), result=[];
+    for(let a=0;a<parts.length;a++) for(let b=a+1;b<parts.length;b++) {
+      const first=strands[a], second=strands[b];
+      for(const p of parts[a]) for(const q of parts[b]) {
+        const reach=p.half+q.half+.001;
+        const dx=p.mid[0]-q.mid[0],dy=p.mid[1]-q.mid[1],dz=p.mid[2]-q.mid[2];
+        if(dx*dx+dy*dy+dz*dz>reach*reach) continue;
+        let ray=cross(p.normal,q.normal), length=Math.hypot(...ray);
+        if(length<.00001) continue;
+        if(dot(ray,p.a)<0) length=-length;
+        ray=ray.map(v=>v/length);
+        if(dot(cross(p.a,ray),p.normal)<0 || dot(cross(ray,p.b),p.normal)<0 ||
+           dot(cross(q.a,ray),q.normal)<0 || dot(cross(ray,q.b),q.normal)<0) continue;
+        const fraction=(part)=>clamp(dist(part.a,ray)/(part.half*2),0,1);
+        const ft=fraction(p),st=fraction(q);
+        const project=(s,part,t)=>s.distances[part.i]+t*(s.distances[part.i+1]-s.distances[part.i]);
+        const pa=mix(first.points[p.i],first.points[p.i+1],ft);
+        const pb=mix(second.points[q.i],second.points[q.i+1],st);
+        const ra=Math.hypot(...pa),rb=Math.hypot(...pb),gap=Math.abs(ra-rb);
+        // Only compressed contacts near one yarn diameter act as pinch points.
+        if(gap<.053 || gap>.095) continue;
+        const ta=project(first,p,ft),tb=project(second,q,st);
+        const under=ra<rb?first:second, over=ra<rb?second:first;
+        const at=ra<rb?ta:tb, overAt=ra<rb?tb:ta;
+        if(at>.955 || overAt>.95) continue;
+        result.push({under:under.id,at,over:over.id,overAt,
+          clearAt:Math.min(1,overAt+.15/over.length),point:ra<rb?pa:pb,overPoint:ra<rb?pb:pa});
+      }
+    }
+    return result;
+  }
+  function assemble(seed) {
+    const random=randomFor(seed), strands=wind(random), raw=gatesFor(strands);
+    // Start one thread at a genuine contact, where the player can see tension immediately.
+    const early=raw.filter(c=>c.at<.24 && c.overAt<.19);
+    if(!early.length) return null;
+    early.sort((a,b)=>Math.abs(a.at-.085)-Math.abs(b.at-.085));
+    const intro=early[0], cut=intro.at, cutStrand=strands.find(s=>s.id===intro.under);
+    const idx=bracket(cutStrand,cut);
+    cutStrand.points=[pointAt(cutStrand,cut),...cutStrand.points.slice(idx+1)];
+    measure(cutStrand);
+    const afterCut=t=>(t-cut)/(1-cut);
+    const candidates=[];
+    for(const c of raw) {
+      if(c.under===intro.under && c.at<cut-EPS || c.over===intro.under && c.overAt<=cut) continue;
+      candidates.push({...c,at:c.under===intro.under?Math.max(0,afterCut(c.at)):c.at,
+        overAt:c.over===intro.under?afterCut(c.overAt):c.overAt,
+        clearAt:c.over===intro.under?afterCut(c.clearAt):c.clearAt});
+    }
+    const introGate=candidates.find(c=>c.under===intro.under && c.at===0 && c.over===intro.over);
+    for(const s of strands) {
+      const available=candidates.filter(c=>c.under===s.id);
+      const selected=s===cutStrand?[introGate]:[];
+      for(const target of [.12,.36,.61,.84]) {
+        const choices=available.filter(c=>Math.abs(c.at-target)<.19 &&
+          selected.every(other=>Math.abs(c.at-other.at)>.115));
+        if(!choices.length) continue;
+        const score=c=>Math.abs(c.at-target)+.045*selected.filter(x=>x.over===c.over).length;
+        choices.sort((a,b)=>score(a)-score(b));
+        selected.push(choices[0]);
+      }
+      s.crossings=selected.sort((a,b)=>a.at-b.at);
+    }
+    // Put the starting pinch and several fingertips toward the initial camera.
+    const firstEnds=strands.map(s=>unit(s.points[0]));
+    let best=-Infinity,front;
+    for(let i=0;i<60;i++) {
+      const a=TAU*random(),h=random()*2-1,rr=Math.sqrt(1-h*h);
+      const v=[rr*Math.cos(a),h,rr*Math.sin(a)],introFacing=dot(v,unit(introGate.point));
+      const near=firstEnds.map(q=>dot(q,v));
+      const score=near.filter(x=>x>.18).length+near.reduce((acc,x)=>acc+Math.max(0,x)*.12,0)+introFacing*.42-(introFacing<.4?1.6:0);
+      if(score>best) {best=score;front=v;}
+    }
+    const xBasis=unit(cross(Math.abs(front[1])>.93?[1,0,0]:[0,1,0],front)),yBasis=cross(front,xBasis);
+    const orient=p=>[dot(p,xBasis),dot(p,yBasis),dot(p,front)];
+    for(const s of strands) {
+      s.points=s.points.map(orient);
+      for(const g of s.crossings) {g.point=orient(g.point);g.overPoint=orient(g.overPoint);}
+    }
+    const level={seed,strands,totalLength:strands.reduce((sum,s)=>sum+s.length,0),introId:cutStrand.id};
+    level.witness=certify(level);
+    return level.witness?level:null;
+  }
+  // Each step advances at least one strand to a new contact or endpoint. A cleared
+  // overpass never returns, so any positive advance is safe for the existence proof.
+  function certify(level) {
+    const progress=Object.fromEntries(level.strands.map(s=>[s.id,0])), moves=[];
+    while(level.strands.some(s=>progress[s.id]<1)) {
+      let advanced=false;
+      for(const s of level.strands) {
+        const gate=s.crossings.find(g=>g.at+EPS>=progress[s.id] && progress[g.over]+EPS<g.clearAt);
+        const to=gate?gate.at:1;
+        if(to<=progress[s.id]+EPS) continue;
+        progress[s.id]=to;
+        moves.push({id:s.id,to});
+        advanced=true;
+      }
+      if(!advanced) return null;
+    }
+    return moves;
+  }
+  const firstSeed=47;
+  function generate(input=firstSeed) {
+    const seed=Number(input)>>>0;
+    for(let i=0;i<5;i++) {
+      const board=assemble((seed+i*17431)>>>0);
+      if(board) {board.seed=seed;return board;}
+    }
+    // Preserve a known, fully checked layout in the rare case of no near-head crossings.
+    const board=assemble(firstSeed); board.seed=seed; return board;
+  }
+
+  function tangentAt(s,at) {
+    const i=bracket(s,at), a=s.points[i], b=s.points[i+1];
+    return unit(b.map((v,k)=>v-a[k]));
+  }
+
+  // Neighbouring arcs transmit tension locally, including touches between
+  // yarns that can slide freely and need no ordering constraint.
+  function contactField(level) {
+    const cellWidth=.24, buckets=new Map();
+    const grid=p=>p.map(v=>Math.floor(v/cellWidth));
+    const key=(x,y,z)=>(x+8)*1024+(y+8)*32+z+8;
+    for(const s of level.strands) for(let i=0;i<s.points.length;i++) {
+      const point=s.points[i], bucket=key(...grid(point));
+      if(!buckets.has(bucket)) buckets.set(bucket,[]);
+      buckets.get(bucket).push({s,at:s.distances[i],point});
+    }
+    return function sample(state,s,gate) {
+      const found=new Map(), p=state.progress[s.id];
+      // A pull propagates along the first 1.25 ball radii of remaining yarn.
+      const head=bracket(s,p), to=p+1.25/s.length;
+      for(let i=head;i<s.points.length && s.distances[i]<=to;i+=2) {
+        const point=i===head?pointAt(s,p):s.points[i], [x,y,z]=grid(point);
+        const fade=Math.exp(-.85*Math.max(0,s.distances[i]-p)*s.length);
+        for(let a=x-1;a<=x+1;a++) for(let b=y-1;b<=y+1;b++) for(let c=z-1;c<=z+1;c++) {
+          const bucket=buckets.get(key(a,b,c));
+          if(!bucket) continue;
+          for(const other of bucket) {
+            const id=other.s.id;
+            if(id===s.id || other.at+EPS<state.progress[id] || state.progress[id]>=1) continue;
+            const dx=other.point[0]-point[0],dy=other.point[1]-point[1],dz=other.point[2]-point[2];
+            const squared=dx*dx+dy*dy+dz*dz;
+            if(squared>.19*.19) continue;
+            const weight=fade*(1-squared/(.19*.19));
+            if(weight>.12 && weight>(found.get(id)?.weight || 0))
+              found.set(id,{id,at:other.at,weight,radius:.80/other.s.length});
+          }
+        }
+      }
+      // A known pinch takes the strongest load, at the exact crossing.
+      if(gate && state.progress[gate.over]<gate.clearAt && gate.overAt+EPS>=state.progress[gate.over]) {
+        const neighbor=level.strands.find(other=>other.id===gate.over);
+        found.set(gate.over,{id:gate.over,at:gate.overAt,weight:1,radius:1.05/neighbor.length});
+      }
+      return [...found.values()].sort((a,b)=>b.weight-a.weight);
+    };
+  }
+
+  function create(level) {
+    const lookup=new Map(level.strands.map(s=>[s.id,s]));
+    const ids=[...lookup.keys()];
+    const contacts=contactField(level);
+    // While free, the tip can bend toward the hand. Drawing along its exit
+    // tangent pays out faster than bending the loose end back on itself.
+    const drawDirections=new Map(level.strands.map(s=>[s.id,s.points.slice(1).map((b,i)=>{
+      const a=s.points[i], normal=unit(mix(a,b,.5)), tangent=unit(b.map((v,k)=>v-a[k]));
+      return unit(tangent.map((v,k)=>-v+.18*normal[k]));
+    })]));
+    const initial={progress:Object.fromEntries(ids.map(id=>[id,0])),active:null,tension:0,knots:{},cinches:{},load:null,totalKnots:0};
+    const cleared=(state,g)=>state.progress[g.over]+EPS>=g.clearAt;
+    // Each strand moves monotonically in arc length. Remembering its most
+    // recent pinch suffices, including a slack pinch the tip can now cross.
+    function cinchAt(state,id,g) {
+      const pinch=state.cinches?.[id];
+      return pinch && pinch.at===g.at ? pinch.tightness : state.knots[id]?KNOT_CINCH:REST_CINCH;
+    }
+    const futureGate=(state,s)=>s.crossings.find(g=>g.at+EPS>=state.progress[s.id] &&
+      !cleared(state,g) && cinchAt(state,s.id,g)>0);
+    function pinAtTip(state,s) {
+      if(state.knots[s.id]) return s.crossings.find(g=>g.at===state.knots[s.id].at);
+      const gate=futureGate(state,s);
+      return gate && gate.at<=state.progress[s.id]+EPS ? gate:null;
+    }
+    function pullDirection(s,at,gate) {
+      if(!gate) return drawDirections.get(s.id)[bracket(s,at)];
+      const normal=unit(pointAt(s,at)), tangent=tangentAt(s,at);
+      // Feed a bight back around the upper strand. Its component normal to
+      // that strand opens the eye; pulling the opposite way seats the knot.
+      const upper=tangentAt(lookup.get(gate.over),gate.overAt);
+      const along=dot(tangent,upper);
+      return unit(tangent.map((v,i)=>v-.82*along*upper[i]+.22*normal[i]));
+    }
+    function pose(state,id) {
+      const s=lookup.get(id);
+      if(!s || state.progress[id]>=1) return null;
+      const at=state.progress[id],gate=pinAtTip(state,s);
+      return {point:pointAt(s,at),direction:pullDirection(s,at,gate),mode:gate?'loosen':'draw',
+        tightness:gate?cinchAt(state,id,gate):0,contacts:contacts(state,s,gate)};
+    }
+    function inspect(state) {
+      const remaining=ids.filter(id=>state.progress[id]<1),knots={},blocked={},nextGate={},safe=[],ends={};
+      for(const id of remaining) {
+        const s=lookup.get(id), gate=futureGate(state,s);
+        ends[id]=pointAt(s,state.progress[id]);
+        if(gate) {
+          nextGate[id]=gate;
+          if(gate.at-state.progress[id]<=EPS) blocked[id]=gate;
+        }
+        if(state.knots[id]) knots[id]={...state.knots[id],ready:cleared(state,state.knots[id]),tightness:cinchAt(state,id,state.knots[id])};
+        else if(!blocked[id]) safe.push(id);
+      }
+      const sum=level.strands.reduce((v,s)=>v+s.length*state.progress[s.id],0);
+      return {won:!remaining.length,progress:sum/level.totalLength,remaining,knots,blocked,nextGate,safe,ends};
+    }
+    function release(state) {
+      return state.active===null && state.tension===0 && !state.load ? state:{...state,active:null,tension:0,load:null};
+    }
+    function knotAt(gate) {
+      return {at:gate.at,over:gate.over,overAt:gate.overAt,clearAt:gate.clearAt,point:gate.point};
+    }
+    function setCinch(state,id,gate,tightness) {
+      const prior=state.cinches?.[id];
+      if(prior && prior.at===gate.at && prior.tightness===tightness) return state;
+      const cinches={...state.cinches,[id]:{at:gate.at,tightness}};
+      if(!state.knots[id] && tightness>=KNOT_CINCH-EPS)
+        return {...state,cinches,knots:{...state.knots,[id]:knotAt(gate)},totalKnots:state.totalKnots+1};
+      if(state.knots[id] && tightness===0) {
+        const knots={...state.knots}; delete knots[id];
+        return {...state,cinches,knots};
+      }
+      return {...state,cinches};
+    }
+    function pull(state,id,seconds) {
+      const s=lookup.get(id);
+      if(!s || state.progress[id]===1 || state.knots[id]) return release(state);
+      if(!Number.isFinite(seconds) || seconds<0) return state;
+      const old=state.progress[id],gate=futureGate(state,s), stop=gate?gate.at:1;
+      const next=Math.min(stop,old+seconds*PULL_SPEED/s.length);
+      const progress=next===old?state.progress:{...state.progress,[id]:next};
+      if(next===1) return {...state,progress,tension:0,active:null,load:null};
+      const pullVector=pullDirection(s,next,null);
+      const freeLoad={id,direction:pullVector,strength:.45,intent:'draw'};
+      if(!gate || next<stop-EPS) return {...state,progress,tension:0,active:id,load:freeLoad};
+      const pressureSeconds=Math.max(0,seconds-Math.max(0,stop-old)*s.length/PULL_SPEED);
+      const tension=(state.active===id?state.tension:0)+pressureSeconds/TIGHTEN_SECONDS;
+      const tightness=clamp(cinchAt(state,id,gate)+pressureSeconds/TIGHTEN_SECONDS*(KNOT_CINCH-REST_CINCH),0,1);
+      const force={id,direction:pullDirection(s,next,gate).map(v=>-v),strength:clamp(.45+tension*.55,0,1),intent:'tighten'};
+      const nextState={...state,progress,tension:Math.min(1,tension),active:id,load:force};
+      if(pressureSeconds<=0) return nextState;
+      const squeezed=setCinch(nextState,id,gate,tightness);
+      return squeezed.knots[id]?release(squeezed):squeezed;
+    }
+
+    // Input is incremental hand travel in world coordinates, measured in ball
+    // radii. The renderer unprojects device pixels with the current camera.
+    // Resting the hand contributes zero work, regardless of frame rate.
+    function drag(state,id,worldDelta) {
+      const s=lookup.get(id);
+      if(!s || state.progress[id]>=1 || !Array.isArray(worldDelta) || worldDelta.length!==3 ||
+         !worldDelta.every(Number.isFinite)) return state;
+      const length=Math.hypot(...worldDelta);
+      if(length<EPS || !Number.isFinite(length)) return state;
+      const dir=worldDelta.map(v=>v/length);
+      let next=state, travel=Math.min(length,8), intent='draw';
+      // A single motion may pay out slack, then encounter a new crossing.
+      // Consume only the unused hand travel at each boundary.
+      while(travel>EPS && next.progress[id]<1) {
+        const at=next.progress[id],gate=pinAtTip(next,s);
+        if(!gate) {
+          const segment=bracket(s,at);
+          const stop=Math.min(futureGate(next,s)?.at ?? 1,s.distances[segment+1]);
+          const alignment=dot(dir,drawDirections.get(id)[segment]);
+          const payout=PULL_SPEED*(.76+.24*alignment);
+          const handToStop=(stop-at)*s.length/payout;
+          const used=Math.min(travel,handToStop);
+          const to=used>=handToStop-EPS?stop:at+used*payout/s.length;
+          next={...next,progress:{...next.progress,[id]:to},tension:0};
+          travel-=used;intent='draw';
+          continue;
+        }
+        const align=dot(dir,pullDirection(s,gate.at,gate));
+        const old=cinchAt(next,id,gate);
+        const openRate=(align-.18)*.97, closeRate=(-align-.18)*.95;
+        if(openRate>0) {
+          const need=old/openRate,used=Math.min(need,travel);
+          const value=used>=need-EPS?0:old-used*openRate;
+          next=setCinch(next,id,gate,value);
+          next={...next,tension:0};
+          travel-=used;intent='loosen';
+        } else if(closeRate>0) {
+          const value=Math.min(1,old+closeRate*travel);
+          next=setCinch(next,id,gate,value);
+          next={...next,tension:Math.min(1,(next.active===id?next.tension:0)+closeRate*travel/.5)};
+          travel=0;intent='tighten';
+        } else {
+          next={...next,tension:Math.max(0,(next.active===id?next.tension:0)-travel)};
+          travel=0;intent='across';
+        }
+      }
+      if(next.progress[id]>=1) return {...next,tension:0,load:null,active:null};
+      const prior=state.load?.id===id?state.load.strength:.16;
+      const strength=1-(1-prior)*Math.exp(-4*length);
+      return {...next,active:id,load:{id,direction:dir,strength,intent}};
+    }
+    function untie(state,id) {
+      const knot=state.knots[id];
+      if(!knot || !cleared(state,knot)) return state;
+      const knots={...state.knots}; delete knots[id];
+      const cinches={...state.cinches}; delete cinches[id];
+      return {...state,knots,cinches,tension:0,active:null,load:null};
+    }
+    function hint(state) {
+      const v=inspect(state);
+      if(v.won) return {action:'done',id:null};
+      const ready=v.remaining.find(id=>v.knots[id]?.ready);
+      if(ready) return {action:'untie',id:ready,over:v.knots[ready].over};
+      // Follow the actual chain of pinches when a knotted thread needs slack.
+      let id=v.remaining.find(i=>v.knots[i]) || v.remaining.find(i=>v.blocked[i]);
+      const seen=new Set();
+      while(id && !seen.has(id)) {
+        seen.add(id);
+        const gate=v.knots[id]||v.blocked[id];
+        if(!gate) return {action:'pull',id,stopAt:v.nextGate[id]?.at ?? 1};
+        id=gate.over;
+      }
+      id=v.safe[0];
+      return {action:'pull',id,stopAt:v.nextGate[id]?.at ?? 1};
+    }
+    function restore(raw) {
+      if(!raw?.progress || !raw.knots || !Number.isSafeInteger(raw.totalKnots) || raw.totalKnots<0) return null;
+      const progress={},knots={},cinches={};
+      for(const s of level.strands) {
+        const id=s.id, p=raw.progress[id],k=raw.knots[id],c=raw.cinches?.[id];
+        if(!Number.isFinite(p)||p<0||p>1) return null;
+        progress[id]=p;
+        if(k) {
+          const g=s.crossings.find(g=>g.over===k.over && Math.abs(g.at-p)<1e-8 && Math.abs(g.clearAt-k.clearAt)<1e-8);
+          if(!g) return null;
+          knots[id]=knotAt(g);
+        }
+        if(c) {
+          const g=s.crossings.find(g=>g.at===c.at);
+          if(!g || !Number.isFinite(c.tightness) || c.tightness<0 || c.tightness>1 ||
+             g.at>p+EPS || (k && (c.at!==knots[id].at || c.tightness===0))) return null;
+          cinches[id]={at:g.at,tightness:c.tightness};
+        } else if(k) cinches[id]={at:knots[id].at,tightness:KNOT_CINCH};
+      }
+      return {...initial,progress,knots,cinches,totalKnots:raw.totalKnots};
+    }
+    return {initial,pull,drag,release,untie,inspect,hint,pose,restore};
+  }
+  globalThis.YarnEngine=Object.freeze({generate,create,pointAt,firstSeed,pullSpeed:PULL_SPEED,tightenSeconds:TIGHTEN_SECONDS});
+})();
+
+</script>
+<script>
+// A small orthographic wool renderer. Arc length on the model sets the twist of each yarn.
+(() => {
+  'use strict';
+  const TAU = Math.PI * 2;
+  const home = [0.18, 0.16];
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const add = (p, v, n = 1) => [p[0] + v[0]*n, p[1] + v[1]*n, p[2] + v[2]*n];
+  const sub = (a, b) => [a[0]-b[0], a[1]-b[1], a[2]-b[2]];
+  const dot = (a,b) => a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const unit = p => {const n = Math.hypot(...p) || 1; return p.map(x => x/n);};
+  const cross = (a,b) => [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  const mix = (a,b,t) => a.map((x,i) => x+(b[i]-x)*t);
+  const rgb = hex => [1,3,5].map(i => parseInt(hex.slice(i,i+2),16));
+  const noise = n => {n = Math.imul(n^(n>>>16),0x45d9f3b); return ((n^(n>>>16))>>>0)/4294967296;};
+  const twist = new Float32Array(1024);
+  const lateralAngle = new Float32Array(513);
+  for (let i=0;i<twist.length;i++) twist[i]=Math.cos(TAU*i/1024);
+  for (let i=0;i<lateralAngle.length;i++) lateralAngle[i]=Math.asin(i/256-1) * 3*1024/TAU;
+
+  function clothTile() {
+    const tile=document.createElement('canvas'); tile.width=tile.height=128;
+    const ctx=tile.getContext('2d'), pic=ctx.createImageData(128,128);
+    for(let y=0;y<128;y++) for(let x=0;x<128;x++) {
+      const i=4*(y*128+x);
+      const warp=1.7*Math.sin(x*Math.PI*.5 + .3*Math.sin(y*Math.PI/16));
+      const weft=1.55*Math.cos(y*Math.PI*.5 + .25*Math.sin(x*Math.PI/16));
+      const tone=warp+weft+(noise(i+487)-.5)*5;
+      pic.data[i]=239+tone;pic.data[i+1]=230+tone;pic.data[i+2]=212+tone;pic.data[i+3]=255;
+    }
+    ctx.putImageData(pic,0,0); return tile;
+  }
+
+  function samples(strand, start) {
+    const steps=strand.distances;
+    let lo=0,hi=steps.length-1;
+    while(lo+1<hi) {const mid=(lo+hi)>>1; if(steps[mid]<start) lo=mid; else hi=mid;}
+    const part=clamp((start-steps[lo])/(steps[hi]-steps[lo] || 1),0,1);
+    const head=mix(strand.points[lo],strand.points[hi],part);
+    let next=hi; if (Math.abs(steps[hi]-start)<1e-8) next++;
+    return {head,next};
+  }
+
+  function mount(host,handlers={}) {
+    const canvas=document.createElement('canvas'), buf=document.createElement('canvas');
+    const ctx=canvas.getContext('2d',{alpha:false}), off=buf.getContext('2d');
+    const tile=clothTile(), textile=ctx.createPattern(tile,'repeat');
+    host.replaceChildren(canvas);
+    if(getComputedStyle(host).position==='static') host.style.position='relative';
+    Object.assign(host.style,{touchAction:'none',userSelect:'none',overflow:'hidden'});
+    Object.assign(canvas.style,{position:'absolute',inset:0,width:'100%',height:'100%',display:'block',touchAction:'none'});
+    canvas.setAttribute('aria-hidden','true');
+    host.tabIndex=0;host.setAttribute('role','group');
+    host.setAttribute('aria-label','可旋转的毛线球。拖空白处转动，捏住线头沿松动方向牵引。方向键也可旋转。');
+    let level=null, state=null, opts={}, strands=[], buttons=new Map(), marks=[];
+    let drawnArcs=[],locatedId=null;
+    let yaw=home[0],pitch=home[1], anim=null, drag=null, frame=0, hover=null;
+    let w=0,h=0,W=0,H=0,q=1,screenDpr=1, picture, words, depth;
+    let axisR=[1,0,0],axisU=[0,1,0],front=[0,0,1], R=100,cx=200,cy=150,remain=1;
+    let cssRadius=100;
+    const springs=new Map();
+    let springTime=0;
+    let quickFrame=false, coarse=false, lastTurn=0;
+    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // The load acts only on nearby arc length. A damped spring at each contact
+    // carries a fraction of the displacement into the crossing yarn.
+    function bendField(now) {
+      for(const node of springs.values()) node.goal=null;
+      const id=opts.selected, pose=opts.pose, force=state?.load;
+      if(force && force.id===id && pose && force.strength>0 && force.direction) {
+        const strand=strands.find(s=>s.id===id);
+        const direction=unit(force.direction);
+        const strength=.30*Math.sqrt(clamp(force.strength,0,1));
+        function load(key,sid,at,width,weight) {
+          if(!Number.isFinite(at) || (state.progress[sid]??1)>=1 || !Number.isFinite(width)) return;
+          let node=springs.get(key);
+          if(!node) {
+            node={id:sid,at,width,pos:[0,0,0],vel:[0,0,0],goal:null};
+            springs.set(key,node);
+          }
+          node.at=at; node.width=width;
+          node.goal=direction.map(x=>x*weight*strength);
+        }
+        if(strand) load('head:'+id,id,state.progress[id],1.10/strand.length,1);
+        for(const c of pose.contacts || []) {
+          if(c.id===id || !strands.some(s=>s.id===c.id)) continue;
+          // The strongest contact can slide to the next material sample
+          // without leaving a second impulse on the same neighbouring yarn.
+          load(id+':'+c.id,c.id,c.at,c.radius,c.weight);
+        }
+      }
+      const dt=clamp((now-springTime)/1000,.001,.045);
+      springTime=now;
+      const field=new Map();
+      let moving=false;
+      for(const [key,node] of springs) {
+        const target=node.goal||[0,0,0], speed=node.goal?27:18, damping=.78;
+        const w=speed*Math.sqrt(1-damping*damping), e=Math.exp(-damping*speed*dt);
+        const c=Math.cos(w*dt), sinc=Math.sin(w*dt)/w;
+        let residual=0;
+        for(let i=0;i<3;i++) {
+          const displacement=node.pos[i]-target[i], v=node.vel[i];
+          node.pos[i]=target[i]+e*(displacement*c+(v+damping*speed*displacement)*sinc);
+          node.vel[i]=e*(v*c-(damping*speed*v+speed*speed*displacement)*sinc);
+          residual+=Math.abs(node.pos[i]-target[i])+Math.abs(node.vel[i])/speed;
+        }
+        if(!node.goal && residual<.0008){springs.delete(key);continue;}
+        if(residual>.0008) moving=true;
+        if(!field.has(node.id)) field.set(node.id,[]);
+        field.get(node.id).push(node);
+      }
+      return {field,moving};
+    }
+
+    function deform(point,at,nodes) {
+      if(!nodes) return point;
+      let result=point;
+      for(const node of nodes) {
+        const relative=(at-node.at)/Math.max(.00001,node.width);
+        if(Math.abs(relative)>=1) continue;
+        const t=1-relative*relative;
+        result=add(result,node.pos,t*t);
+      }
+      return result;
+    }
+
+    function invalidate(){if(!frame) frame=requestAnimationFrame(draw);}
+    function resize(){
+      const box=host.getBoundingClientRect();w=box.width;h=box.height;
+      if(w<2||h<2) return;
+      screenDpr=Math.min(window.devicePixelRatio||1,2);
+      canvas.width=Math.round(w*screenDpr);canvas.height=Math.round(h*screenDpr);
+      coarse=matchMedia('(pointer: coarse)').matches || w<540;
+      updateRaster(false);
+      invalidate();
+    }
+    function updateRaster(interactive) {
+      const still=Math.min(1.35,Math.max(1,window.devicePixelRatio||1),790/Math.max(w,h));
+      const quality=coarse && interactive ? Math.min(still,.88,480/Math.max(w,h)) : still;
+      const width=Math.max(1,Math.round(w*quality)), height=Math.max(1,Math.round(h*quality));
+      quickFrame=coarse && interactive;
+      if(width===W && height===H && picture) return;
+      q=quality; W=width; H=height;
+      buf.width=W;buf.height=H;picture=off.createImageData(W,H);
+      words=new Uint32Array(picture.data.buffer);depth=new Float32Array(W*H);
+    }
+    function setCamera(){
+      const a=Math.sin(yaw),b=Math.cos(yaw),c=Math.sin(pitch),d=Math.cos(pitch);
+      axisR=[b,0,-a];axisU=[-a*c,d,-b*c];front=[a*d,c,b*d];
+      const base=Math.min(w*.365,h*.365);
+      const shrink=remain>0 ? .56+.44*Math.cbrt(remain) : 0;
+      cssRadius=base*shrink;R=cssRadius*q;
+      cx=W*.5; cy=(h*.475+base*.78*(1-shrink))*q;
+    }
+    function guideProjection(direction) {
+      const d=unit(direction);
+      const dx=dot(axisR,d),dy=-dot(axisU,d);
+      return {dx,dy,visibility:Math.hypot(dx,dy)};
+    }
+
+    function project(p){return [cx+R*dot(p,axisR),cy-R*dot(p,axisU),R*dot(p,front)];}
+    function surface(x,y,z,forward){
+      const n=Math.hypot(x,y,z)||1;
+      // The room lights the top-left of the ball and the desk bounces warm light underneath.
+      const directional=(-.48*x-.64*y+.60*z)/n;
+      return (.74+.34*Math.max(-.38,directional))*(.88+.13*forward);
+    }
+    function scene() {
+      ctx.setTransform(screenDpr,0,0,screenDpr,0,0);
+      ctx.fillStyle=textile;ctx.fillRect(0,0,w,h);
+      const light=ctx.createRadialGradient(w*.26,h*.13,1,w*.36,h*.30,Math.max(w,h)*.72);
+      light.addColorStop(0,'rgba(255,252,240,.22)');light.addColorStop(.68,'rgba(254,247,224,0)');light.addColorStop(1,'rgba(121,94,64,.085)');
+      ctx.fillStyle=light;ctx.fillRect(0,0,w,h);
+      if(remain<=0||!level) return;
+      const floor=cy/q+cssRadius*.91;
+      function shadow(x,y,rx,ry,opacity){
+        ctx.save();ctx.translate(x,y);ctx.scale(Math.max(1,rx),Math.max(1,ry));
+        const wash=ctx.createRadialGradient(0,0,0,0,0,1);
+        wash.addColorStop(0,'rgba(69,49,32,'+opacity+')');wash.addColorStop(.52,'rgba(94,68,43,'+opacity*.48+')');
+        wash.addColorStop(1,'rgba(93,64,40,0)');ctx.fillStyle=wash;ctx.fillRect(-1,-1,2,2);ctx.restore();
+      }
+      shadow(w*.5+cssRadius*.12,floor+.01*cssRadius,cssRadius*1.22,cssRadius*.24,.25*Math.pow(remain,.35));
+      shadow(w*.5+cssRadius*.07,floor,cssRadius*.73,cssRadius*.12,.29*Math.pow(remain,.65));
+    }
+
+    // Draw capsule fragments into a shared depth buffer. Cord twist uses signed distance from the
+    // centreline, so the three plies turn around the cord as the viewer rotates the ball.
+    function segment(a,b,s0,s1,col,idx,r,lit) {
+      const dx=b[0]-a[0],dy=b[1]-a[1],dz=b[2]-a[2];
+      const len2=dx*dx+dy*dy,l=Math.sqrt(len2)||1, inv=len2>.0001?1/len2:0;
+      const len3=Math.hypot(l,dz), nx=-dy/l, ny=dx/l, invr=1/r,rr=r*r;
+      const alongView=dz/(l*len3), wx=-dx*alongView, wy=-dy*alongView, wz=l/len3;
+      const x0=Math.max(0,Math.floor(Math.min(a[0],b[0])-r)),x1=Math.min(W-1,Math.ceil(Math.max(a[0],b[0])+r));
+      const y0=Math.max(0,Math.floor(Math.min(a[1],b[1])-r)),y1=Math.min(H-1,Math.ceil(Math.max(a[1],b[1])+r));
+      const startPhase=s0*11960+idx*193, stepping=(s1-s0)*11960;
+      for(let y=y0;y<=y1;y++) {
+        const py=y+.5-a[1]; let pos=y*W+x0,px=x0+.5-a[0];
+        for(let x=x0;x<=x1;x++,pos++,px++) {
+          const axial=(px*dx+py*dy)*inv, lateral=px*nx+py*ny;
+          if(Math.abs(lateral)>=r) continue;
+          const rise=Math.sqrt(rr-lateral*lateral);
+          let t=axial+alongView*rise;
+          let ex,ey,ez,z;
+          if(t>=0 && t<=1 && len2>.0001) {
+            ex=nx*lateral+wx*rise;ey=ny*lateral+wy*rise;ez=wz*rise;
+            z=a[2]+dz*t+ez;
+          } else {
+            const end=t>.5?1:0;
+            ex=px-end*dx;ey=py-end*dy;
+            const radius2=rr-ex*ex-ey*ey;
+            if(radius2<=0) continue;
+            ez=Math.sqrt(radius2);z=a[2]+end*dz+ez;
+            t=end+(ex*dx+ey*dy+ez*dz)/(len3*len3);
+          }
+          if(z<=depth[pos]) continue;
+          const v=clamp(lateral*invr,-1,1), angle=lateralAngle[(256+256*v)|0];
+          const phase=(startPhase+stepping*t+angle)|0, helix=twist[phase&1023];
+          const grooves=clamp((helix+.87)*3.9,0,1);
+          const micro=twist[(phase*5+(idx*17))&1023];
+          const grit=(((Math.imul(x,1597334677)^Math.imul(y,2246822519))>>>24)/255-.5);
+          const nap=twist[(phase*11+((angle*.47)|0))&1023];
+          const bump=1.01+.09*helix-.19*(1-grooves)+.046*micro+.023*nap+.075*grit;
+          const local=.81+.20*ez*invr-.115*ex*invr-.145*ey*invr;
+          const k=clamp(lit*local*bump,.41,1.28);
+          const red=Math.min(255,(col[0]*k+5)|0),green=Math.min(255,(col[1]*k+3)|0),blue=Math.min(255,(col[2]*k+2)|0);
+          words[pos]=(0xff000000|(blue<<16)|(green<<8)|red)>>>0;depth[pos]=z;
+        }
+      }
+    }
+
+    function drawWool(points,arcs,fiber,tube,samplesForFuzz,interval=3) {
+      let prev=project(points[0]);
+      for(let i=1;i<points.length;i++) {
+        const next=project(points[i]),mid=[(prev[0]+next[0])*.5-cx,(prev[1]+next[1])*.5-cy,(prev[2]+next[2])*.5];
+        const lit=surface(...mid,mid[2]/R);
+        segment(prev,next,arcs[i-1],arcs[i],fiber.rgb,fiber.i,R*tube,lit);
+        if(samplesForFuzz && i%interval===0) samplesForFuzz.push({p:next,a:prev,id:fiber.i,index:i,col:fiber.rgb,r:R*tube});
+        prev=next;
+      }
+    }
+
+    // An open trefoil segment, oriented in the tangent plane at the actual trapped crossing.
+    function knotAndLead(fiber,head,tangent,knot,pull,tension,snug) {
+      const normal=unit(knot?.point || head);
+      let side=unit(add(tangent,normal,-dot(tangent,normal)));
+      if(Math.hypot(...side)<.1) side=unit(cross(normal,[.1,1,0]));
+      const along=unit(cross(normal,side));
+      let start=head,freeStart=0;const points=[head];
+      if(knot) {
+        // The hitch remains cinched after the finger lifts; easing the same
+        // loop over multiple strokes expands both its eye and the free bight.
+        const eye=1.65-.98*snug;
+        const center=add(head,normal,.14+.04*eye);
+        for(let i=0;i<=60;i++){
+          const a=.18+TAU*.92*i/60;
+          const x=(Math.sin(a)+2*Math.sin(2*a))*.072*eye;
+          const y=(Math.cos(a)-2*Math.cos(2*a))*.072*eye;
+          const z=-Math.sin(3*a)*.096*(.64+.36*eye);
+          points.push(add(add(add(center,side,x),along,y),normal,z));
+        }
+        start=points[points.length-1];freeStart=points.length-1;
+      }
+      const extra=pull ? .13 : 0;
+      for(let i=1;i<=14;i++) {
+        const t=i/14;
+        let p=add(start,side,.26*Math.sin(t*Math.PI*.60));
+        p=add(p,normal,(.21+extra+tension*.09)*t);
+        p=add(p,along,.048*Math.sin(Math.PI*1.42*t+fiber.i*.9)*t);
+        if(!knot && snug>0) {
+          const turn=TAU*t;
+          p=add(add(p,along,.17*snug*Math.sin(turn)),normal,-.10*snug*(1-Math.cos(turn)));
+        }
+        p[1]-=(.135-.045*tension)*t*t;
+        points.push(p);
+      }
+      if(drag?.id===fiber.id && drag.dist>2) {
+        const tip=project(points[points.length-1]);
+        const vx=(drag.localX-drag.tagX-tip[0]/q)/cssRadius;
+        const vy=(tip[1]/q+drag.tagY-drag.localY)/cssRadius;
+        const maxReach=knot ? .68-.39*snug : 1.55 - .76*clamp(tension,0,1)-.32*snug;
+        const reach=Math.min(1,maxReach/(Math.hypot(vx,vy)||1));
+        for(let i=freeStart+1;i<points.length;i++) {
+          const t=(i-freeStart)/(points.length-1-freeStart);
+          points[i]=add(add(add(points[i],axisR,vx*reach*t*t),axisU,vy*reach*t*t),front,.16*t*t);
+        }
+      }
+      return points;
+    }
+
+    function drawFuzz(list) {
+      ctx.save();ctx.setTransform(w*screenDpr/W,0,0,h*screenDpr/H,0,0);ctx.lineCap='round';
+      for(const f of list) {
+        const p=f.p,idx=Math.round(p[1])*W+Math.round(p[0]);
+        if(idx<0||idx>=W*H||depth[idx]>p[2]+f.r*1.32) continue;
+        const dx=p[0]-f.a[0],dy=p[1]-f.a[1],l=Math.hypot(dx,dy)||1,tx=dx/l,ty=dy/l;
+        for(let k=0;k<(quickFrame?1:3);k++) {
+          const n=f.id*71131+f.index*113+k*977;
+          const sign=noise(n+3)>.5?1:-1,side=sign*(.65+.30*noise(n+7));
+          const x=p[0]-ty*f.r*side,y=p[1]+tx*f.r*side;
+          const flank=Math.round(y)*W+Math.round(x);
+          if(flank<0||flank>=depth.length||depth[flank]>p[2]+f.r*1.4) continue;
+          const out=sign*(.24+.58*noise(n+81))*f.r,len=(.45+noise(n+19))*f.r;
+          const tone=.87+.20*noise(n+41);
+          ctx.strokeStyle='rgba('+f.col.map(c=>Math.min(255,Math.round(c*tone+10))).join(',')+',.55)';
+          ctx.lineWidth=Math.max(.55,q*.53);ctx.beginPath();ctx.moveTo(x,y);
+          ctx.quadraticCurveTo(x+tx*len*.45-ty*out,y+ty*len*.45+tx*out,x+tx*len-ty*out*.67,y+ty*len+tx*out*.67);ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
+    function addTag(fiber,point,origin,knotted) {
+      const tip=project(point),start=project(origin),z=tip[2];
+      const ix=clamp(Math.round(tip[0]),0,W-1),iy=clamp(Math.round(tip[1]),0,H-1);
+      const occluded=depth[iy*W+ix]>=z+R*.095;
+      const visible=!occluded || locatedId===fiber.id || drag?.id===fiber.id;
+      return {id:fiber.id,x:tip[0]/q,y:tip[1]/q,baseX:tip[0]/q,baseY:tip[1]/q,
+        originX:start[0]/q,originY:start[1]/q,z,visible,occluded,color:fiber.color,knotted};
+    }
+    function labels() {
+      ctx.setTransform(screenDpr,0,0,screenDpr,0,0);
+      const placed=[],tagRadius=coarse?13.5:clamp(w*.021,11,14);
+      marks.sort((a,b)=>b.z-a.z);
+      for(const m of marks){
+        const button=buttons.get(m.id);
+        button.hidden=!m.visible;button.dataset.visible=String(m.visible);
+        button.dataset.occluded=String(m.occluded);
+        if(!m.visible) continue;
+        const active=opts.selected===m.id||hover===m.id||document.activeElement===button;
+        const dx=m.baseX-w*.5,dy=m.baseY-cy/q,sz=Math.hypot(dx,dy)||1;
+        m.x+=dx/sz*(tagRadius+3);m.y+=dy/sz*(tagRadius+3);
+        const margin=coarse?24:tagRadius+4;
+        m.x=clamp(m.x,margin,w-margin);m.y=clamp(m.y,margin,h-margin);
+        const spacing=coarse ? 47 : tagRadius*2+7;
+        const fits=(x,y)=>placed.every(other=>Math.hypot(x-other.x,y-other.y)>=spacing);
+        if(!fits(m.x,m.y)) {
+          // Look for the closest clear touch target, including along the frame
+          // edge where simply pushing two labels away can pin them together.
+          const preferred=Math.atan2(dy,dx);
+          search: for(let ring=1;ring<=6;ring++) for(let step=0;step<12;step++) {
+            const offset=(step%2 ? -1 : 1)*Math.ceil(step/2)*TAU/12;
+            const r=ring*spacing*.40,angle=preferred+offset;
+            const x=clamp(m.x+Math.cos(angle)*r,margin,w-margin);
+            const y=clamp(m.y+Math.sin(angle)*r,margin,h-margin);
+            if(fits(x,y)){m.x=x;m.y=y;break search;}
+          }
+        }
+        placed.push(m);
+        ctx.strokeStyle='#796b54';ctx.lineWidth=1.1;ctx.setLineDash(m.occluded?[2,2]:[]);
+        ctx.beginPath();ctx.moveTo(m.baseX,m.baseY);ctx.lineTo(m.x,m.y);ctx.stroke();ctx.setLineDash([]);
+        ctx.save();ctx.shadowColor='rgba(65,47,32,.28)';ctx.shadowBlur=4;ctx.shadowOffsetY=2;
+        ctx.fillStyle=active?'#493d32':'#fff8e8';ctx.beginPath();ctx.arc(m.x,m.y,tagRadius,0,TAU);ctx.fill();ctx.restore();
+        ctx.strokeStyle=active?'#fff6dc':'#625644';ctx.lineWidth=active?2.3:1.15;ctx.stroke();
+        if(m.knotted){ctx.strokeStyle='#a5473a';ctx.lineWidth=2;ctx.setLineDash([3,2]);ctx.beginPath();ctx.arc(m.x,m.y,tagRadius+3,0,TAU);ctx.stroke();ctx.setLineDash([]);}
+        ctx.fillStyle=active?'#fffae9':'#3c3028';ctx.font='700 '+Math.round(tagRadius*1.02)+'px "SFMono-Regular",Menlo,monospace';
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(m.id,m.x,m.y+.65);
+        button.style.left=m.x+'px';button.style.top=m.y+'px';
+      }
+      for(const [id,button] of buttons) if(!marks.some(m=>m.id===id)){button.hidden=true;button.dataset.visible='false';}
+    }
+
+    function paintGuide() {
+      if(!opts.guide || !opts.pose?.direction) return;
+      const m=marks.find(mark=>mark.id===opts.selected && mark.visible);
+      if(!m) return;
+      const {dx,dy,visibility}=guideProjection(opts.pose.direction);
+      ctx.save();
+      ctx.setTransform(screenDpr,0,0,screenDpr,0,0);
+      ctx.lineCap='round';ctx.lineJoin='round';
+      if(visibility<.38) {
+        const x=clamp(m.x,43,w-43), y=clamp(m.y-29,14,h-14);
+        ctx.fillStyle='#fff9e9';ctx.strokeStyle='#645543';ctx.lineWidth=1.2;
+        ctx.beginPath();ctx.roundRect(x-38,y-10,76,20,8);ctx.fill();ctx.stroke();
+        ctx.font='600 11px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#584633';
+        ctx.fillText('转动看方向',x,y+.4);
+      } else {
+        const ux=dx/visibility,uy=dy/visibility,lead=coarse?19:18;
+        // Near an edge draw the arrow from behind the tag, pointing into it.
+        const len=coarse?38:44;
+        let x=m.x+ux*lead,y=m.y+uy*lead;
+        if(x+ux*len<9 || x+ux*len>w-9 || y+uy*len<9 || y+uy*len>h-9) {
+          x=m.x-ux*(lead+len); y=m.y-uy*(lead+len);
+        }
+        const ex=x+ux*len,ey=y+uy*len;
+        const path=new Path2D();path.moveTo(x,y);path.lineTo(ex,ey);
+        path.moveTo(ex-ux*9+uy*5.5,ey-uy*9-ux*5.5);path.lineTo(ex,ey);
+        path.lineTo(ex-ux*9-uy*5.5,ey-uy*9+ux*5.5);
+        ctx.strokeStyle='#fff8e6';ctx.lineWidth=6;ctx.stroke(path);
+        ctx.strokeStyle=opts.pose.mode==='loosen'?'#286a54':'#684833';ctx.lineWidth=2.7;ctx.stroke(path);
+      }
+      ctx.restore();
+    }
+
+    function draw(now){
+      frame=0;if(!picture||!w||!h) return;
+      if(anim) {
+        const t=clamp((now-anim.start)/anim.duration,0,1),s=t*t*(3-2*t);
+        yaw=anim.yaw+anim.dy*s;pitch=anim.pitch+anim.dp*s;
+        if(t>=1) anim=null;
+      }
+      const prog=state?.progress || {};
+      const {field,moving}=bendField(now);
+      updateRaster(Boolean(drag||anim||moving||state?.active||now-lastTurn<85));
+      const total=strands.reduce((n,s)=>n+s.length,0);
+      remain=total?clamp(strands.reduce((n,s)=>n+(1-(prog[s.id]||0))*s.length,0)/total,0,1):0;
+      setCamera();scene();marks=[];drawnArcs=[];
+      if(!level||!state||remain<1e-8) {labels();return;}
+      words.fill(0);depth.fill(-Infinity);
+      const fuzz=[],heads=[];
+      for(const strand of strands) {
+        const p=clamp(prog[strand.id]||0,0,1);if(p>=1-1e-7) continue;
+        const sample=samples(strand,p), next=sample.next, nodes=field.get(strand.id);
+        const head=deform(sample.head,p,nodes);
+        const points=[head], arcs=[p*strand.length];
+        for(let i=next;i<strand.points.length;i++) {
+          const at=strand.distances[i];
+          points.push(deform(strand.points[i],at,nodes)); arcs.push(at*strand.length);
+        }
+        drawWool(points,arcs,strand,.0505,fuzz,quickFrame?4:2);
+        const tangent=unit(sub(head,points[1]||strand.points[Math.min(next,strand.points.length-1)]));
+        const knot=state.knots?.[strand.id];
+        const pulled=Boolean(opts.pulling)&&(opts.selected===strand.id);
+        const tension=(opts.selected===strand.id?Number(state.tension)||0:0);
+        const pinch=state.cinches?.[strand.id];
+        const gate=pinch && Math.abs(pinch.at-p)<1e-6 && strand.crossings.find(g=>g.at===pinch.at);
+        const atPinch=gate && (knot || (prog[gate.over]||0)<gate.clearAt-1e-6);
+        const selectedBight=opts.selected===strand.id ? opts.pose?.tightness : 0;
+        const tightness=atPinch ? pinch.tightness : selectedBight || knot?.tightness || (knot ? 0.67 : 0);
+        const snug=clamp(tightness,0,1);
+        const lead=knotAndLead(strand,head,tangent,knot,pulled,tension,snug);
+        drawnArcs.push({id:strand.id,body:points,lead});
+        let arc=p*strand.length;const leadArcs=[arc];
+        for(let j=1;j<lead.length;j++){arc-=Math.hypot(...sub(lead[j],lead[j-1]));leadArcs.push(arc);}
+        drawWool(lead,leadArcs,strand,.0505,fuzz,1);
+        heads.push([strand,lead[lead.length-1],head,knot]);
+      }
+      // Short-range contact shadows under crossing strands.
+      const d=Math.max(1,Math.round(R*.022)),shift=d*W+d;
+      for(let y=d;y<H;y++) {
+        const end=(y+1)*W;
+        for(let i=y*W+d;i<end;i++) {
+          if(words[i]===0) continue;
+          const gap=depth[i-shift]-depth[i];
+          if(gap<R*.057||gap>R*.67) continue;
+          const v=words[i],k=1-.14*(1-gap/(R*.67));
+          words[i]=(0xff000000|(((v>>>16)&255)*k<<16)|(((v>>>8)&255)*k<<8)|((v&255)*k))>>>0;
+        }
+      }
+      off.putImageData(picture,0,0);ctx.drawImage(buf,0,0,w,h);
+      drawFuzz(fuzz);
+      for(const a of heads) marks.push(addTag(...a));
+      labels();paintGuide();
+      if(anim || moving || (quickFrame && !drag && !state?.active)) invalidate();
+    }
+
+    function setLevel(raw){
+      level=raw;state=null;opts={};yaw=home[0];pitch=home[1];anim=null;drag=null;
+      drawnArcs=[];locatedId=null;
+      springs.clear();springTime=0;
+      buttons.forEach(b=>b.remove());buttons=new Map();marks=[];
+      strands=raw.strands.map((s,i)=>({...s,i,rgb:rgb(s.color)}));
+      for(const s of strands){
+        const b=document.createElement('button'); b.type='button'; b.dataset.yarn=s.id;
+        b.setAttribute('aria-label',s.id+' '+s.name+'线头');b.title=s.name+' '+s.id;
+        b.hidden=true;
+        Object.assign(b.style,{position:'absolute',width:'46px',height:'46px',minWidth:0,minHeight:0,padding:0,margin:0,opacity:0,
+          transform:'translate(-50%,-50%)',border:0,borderRadius:'50%',cursor:'grab',touchAction:'none'});
+        b.addEventListener('click',e=>{if(e.detail===0&&!b.hidden) handlers.onSelect?.(s.id);});
+        b.addEventListener('focus',invalidate);b.addEventListener('blur',invalidate);
+        host.append(b);buttons.set(s.id,b);
+      }
+      invalidate();
+    }
+    function show(next,options={}) {
+      if(locatedId!==options.selected) locatedId=null;
+      state=next;opts=options;invalidate();
+    }
+    function focus(target){
+      let p=typeof target==='string'?null:(Array.isArray(target)?target:target?.point);
+      if(!p){
+        const id=typeof target==='string'?target:target?.id;
+        const s=strands.find(v=>v.id===id);if(!s||!state) return;
+        locatedId=id;
+        p=samples(s,clamp(state.progress[s.id]||0,0,1)).head;
+      } else {
+        locatedId=null;
+      }
+      faceCamera(p);
+    }
+    // Test the sightline through the currently drawn cords, including free
+    // tails and knot loops. This runs once when a player requests a side view.
+    function exposedFrom(tip,eye) {
+      for(const cord of drawnArcs) for(const arc of [cord.body,cord.lead]) {
+        for(let i=1;i<arc.length;i++) {
+          const a=arc[i-1],b=arc[i];
+          const ax=a[0]-tip[0],ay=a[1]-tip[1],az=a[2]-tip[2];
+          const vx=b[0]-a[0],vy=b[1]-a[1],vz=b[2]-a[2];
+          const z=ax*eye[0]+ay*eye[1]+az*eye[2];
+          const dz=vx*eye[0]+vy*eye[1]+vz*eye[2];
+          if(Math.max(z,z+dz)<.045) continue;
+          const vv=vx*vx+vy*vy+vz*vz-dz*dz;
+          const t=vv>1e-8 ? clamp(-(ax*vx+ay*vy+az*vz-z*dz)/vv,0,1) : (dz>0?1:0);
+          const depth=z+t*dz;
+          const x=ax+t*vx,y=ay+t*vy,h=az+t*vz;
+          if(depth>.045 && x*x+y*y+h*h-depth*depth<.066*.066) return false;
+        }
+      }
+      return true;
+    }
+    function focusDirection(id,direction){
+      const strand=strands.find(s=>s.id===id);
+      if(!strand || !state || !direction) return;
+      locatedId=id;
+      const lead=drawnArcs.find(cord=>cord.id===id)?.lead;
+      const tip=lead?.[lead.length-1] || samples(strand,state.progress[id]).head;
+      const n=unit(tip),d=unit(direction);
+      let sideways=add(n,d,-dot(n,d));
+      if(Math.hypot(...sideways)<.08) {
+        sideways=add(front,d,-dot(front,d));
+        if(Math.hypot(...sideways)<.08) sideways=cross(d,Math.abs(d[1])>.85?[1,0,0]:[0,1,0]);
+      }
+      const u=unit(sideways),v=cross(d,u);
+      const candidates=[];
+      for(const tilt of [0,.33,-.33,.58,-.58]) for(let i=0;i<16;i++) {
+        const a=TAU*i/16,scale=Math.sqrt(1-tilt*tilt);
+        const eye=add(add(d.map(x=>x*tilt),u,Math.cos(a)*scale),v,Math.sin(a)*scale);
+        // Preserve at least 81% of unit hand travel in the screen plane.
+        const score=dot(eye,n)+.15*scale+.06*dot(eye,front);
+        candidates.push({eye,score});
+      }
+      candidates.sort((a,b)=>b.score-a.score);
+      const view=candidates.find(candidate=>exposedFrom(tip,candidate.eye)) || candidates[0];
+      faceCamera(view.eye);
+    }
+    function faceCamera(p){
+      const n=unit(p),a=Math.atan2(n[0],n[2]),b=Math.asin(clamp(n[1],-1,1));
+      const dy=Math.atan2(Math.sin(a-yaw),Math.cos(a-yaw));
+      if(reduced.matches){anim=null;yaw+=dy;pitch=b;}
+      else anim={start:performance.now(),duration:320,yaw,pitch,dy,dp:b-pitch};
+      invalidate();
+    }
+    function turn(dir,dp=0){
+      const routes={left:[-.43,0],right:[.43,0],up:[0,.31],down:[0,-.31]};
+      const [a,b]=typeof dir==='number'?[dir*Math.PI/180,dp*Math.PI/180]:routes[dir]||[0,0];
+      anim=null;locatedId=null;lastTurn=performance.now();yaw+=a;pitch=clamp(pitch+b,-1.54,1.54);invalidate();
+    }
+    function resetView(){anim=null;locatedId=null;[yaw,pitch]=home;invalidate();}
+    function pointerEnd(e){
+      if(!drag||drag.pointer!==e.pointerId)return;
+      const pulled=drag.id;drag=null;host.style.cursor='grab';
+      if(host.hasPointerCapture(e.pointerId))host.releasePointerCapture(e.pointerId);
+      if(pulled) handlers.onPullEnd?.(pulled);invalidate();
+    }
+    function near(x,y){
+      let best=null, closest=coarse?24:23;
+      for(const m of marks) if(m.visible){
+        const distance=Math.hypot(m.x-x,m.y-y);
+        if(distance<closest) {closest=distance;best=m;}
+      }
+      if(best) return best;
+      closest=coarse?16:14;
+      for(const m of marks) if(m.visible){
+        const distance=Math.hypot(m.baseX-x,m.baseY-y);
+        if(distance<closest){closest=distance;best=m;}
+      }
+      return best;
+    }
+    host.addEventListener('pointerdown',e=>{
+      if(e.button!==0||drag)return;
+      const rect=host.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;
+      const m=near(x,y),id=m?.id||null;anim=null;
+      drag={pointer:e.pointerId,id,x:e.clientX,y:e.clientY,prevX:e.clientX,prevY:e.clientY,localX:x,localY:y,tagX:m?x-m.baseX:0,tagY:m?y-m.baseY:0,yaw,pitch,dist:0};
+      host.setPointerCapture(e.pointerId);host.style.cursor='grabbing';
+      if(id){handlers.onSelect?.(id);handlers.onPullStart?.(id);}
+      e.preventDefault();
+    });
+    host.addEventListener('pointermove',e=>{
+      if(!drag||drag.pointer!==e.pointerId) {
+        if(e.pointerType==='touch') return;
+        const rect=host.getBoundingClientRect(),m=near(e.clientX-rect.left,e.clientY-rect.top);
+        if((m?.id||null)!==hover){hover=m?.id||null;invalidate();}
+        return;
+      }
+      const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+      const box=host.getBoundingClientRect();drag.localX=e.clientX-box.left;drag.localY=e.clientY-box.top;
+      if(drag.id) {
+        const mx=e.clientX-drag.prevX,my=e.clientY-drag.prevY,pixels=Math.hypot(mx,my);
+        drag.dist=Math.hypot(dx,dy);
+        drag.prevX=e.clientX; drag.prevY=e.clientY;
+        if(pixels>.01) {
+          const scale=1/Math.max(1,cssRadius);
+          const world=axisR.map((v,i)=>(v*mx-axisU[i]*my)*scale);
+          handlers.onPullMove?.(drag.id,{world,pixels});
+        }
+        invalidate();
+      } else {locatedId=null;yaw=drag.yaw+dx*.009;pitch=clamp(drag.pitch+dy*.008,-1.54,1.54);invalidate();}
+    });
+    host.addEventListener('pointerup',pointerEnd);host.addEventListener('pointercancel',pointerEnd);host.addEventListener('lostpointercapture',pointerEnd);
+    host.addEventListener('pointerleave',()=>{if(!drag&&hover){hover=null;invalidate();}});
+    host.addEventListener('keydown',e=>{const d={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[e.key];
+      if(d){e.preventDefault();turn(d);}else if(e.key==='Home'){e.preventDefault();resetView();}});
+    if(window.ResizeObserver)new ResizeObserver(resize).observe(host);
+    window.addEventListener('resize',resize);host.style.cursor='grab';resize();
+    return Object.freeze({setLevel,show,focus,focusDirection,guideProjection,turn,resetView});
+  }
+  globalThis.YarnView=Object.freeze({mount});
+})();
+
+</script>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const storageKey = 'slow-yarn-ball-v1';
+  const percentage = value => value >= 1 ? 100 : Math.min(99,Math.floor(value * 100 + 1e-7));
+  let level, game, state, info, strands, selected, number = 1;
+  let history = [], grip = null, frame = 0, lastTick = 0, panelFrame = 0;
+  let guide = true;
+  const spools = new Map();
+
+  function drawMark() {
+    const c = $('mark').getContext('2d');
+    c.scale(2,2);
+    c.fillStyle='#f0dfc8'; c.beginPath(); c.arc(32,32,30,0,2*Math.PI); c.fill();
+    c.strokeStyle='#965b40'; c.lineWidth=2.6; c.lineCap='round'; c.lineJoin='round';
+    c.beginPath(); c.ellipse(30,30,17.5,17,-.2,0,2*Math.PI); c.stroke();
+    for(const path of [
+      'M15 22 Q30 22 43 36','M19 17 Q33 19 46 31','M25 14 Q35 15 46 25',
+      'M13 28 Q21 27 32 31','M15 34 Q20 29 24 29','M17 39 Q22 32 28 31',
+      'M22 44 Q27 34 34 32','M29 46 Q33 38 39 36','M35 45 Q39 40 42 39',
+      'M40 43 C46 45 46 54 53 50'
+    ]) c.stroke(new Path2D(path));
+  }
+
+  function drawSpool(id) {
+    const s = strands.get(id), entry = spools.get(id), ratio = state.progress[id];
+    const quant = Math.floor(ratio * 22);
+    if (entry.step === quant) return;
+    entry.step = quant;
+    const c = entry.canvas.getContext('2d');
+    c.setTransform(2,0,0,2,0,0); c.clearRect(0,0,44,40);
+    c.save(); c.translate(22,20); c.rotate(-.21);
+    c.fillStyle='#c39763'; c.fillRect(-10,-12,20,24);
+    c.fillStyle='#e5c294'; c.fillRect(-8,-12,11,24);
+    // A coloured start on each spool identifies its thread even when empty.
+    const half=4.5+ratio*7.5, girth=10.1+ratio*2;
+    c.fillStyle=s.color; c.fillRect(-girth,-half,girth*2,half*2);
+    c.save(); c.beginPath();c.rect(-girth,-half,girth*2,half*2);c.clip();
+    for(let y=-half-3;y<half+4;y+=2.7){
+      c.strokeStyle='#59423366';c.lineWidth=.8;c.beginPath();c.moveTo(-girth,y);c.lineTo(girth,y+2);c.stroke();
+      c.strokeStyle='#fff8e899';c.beginPath();c.moveTo(-girth,y+.8);c.lineTo(girth,y+2.8);c.stroke();
+    }
+    c.restore();
+    c.strokeStyle='#a5774a'; c.lineWidth=4.1; c.lineCap='round';
+    for(const y of [-13,13]){c.beginPath();c.moveTo(-12,y);c.lineTo(12,y);c.stroke();}
+    c.strokeStyle='#eccca2';c.lineWidth=2;
+    for(const y of [-13.6,12.3]){c.beginPath();c.moveTo(-11,y);c.lineTo(11,y);c.stroke();}
+    c.restore();
+  }
+
+  function makePalette() {
+    spools.clear();
+    const list = level.strands.map(s => {
+      const button=document.createElement('button'); button.type='button';
+      button.className='swatch'; button.dataset.strand=s.id;
+      button.style.setProperty('--strand',s.color);
+      button.setAttribute('aria-label','选择 ' + s.id + ' ' + s.name + '色线头');
+      const canvas=document.createElement('canvas'); canvas.width=88; canvas.height=80;
+      canvas.setAttribute('aria-hidden','true');
+      const b=document.createElement('b'); b.textContent=s.id;
+      button.append(canvas,b);button.addEventListener('click',()=>select(s.id,true));
+      spools.set(s.id,{button,canvas,step:-1});
+      return button;
+    });
+    $('palette').replaceChildren(...list);
+  }
+
+  function announce(message, tone='normal') {
+    $('status').textContent=message; $('signal').dataset.tone=tone;
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({
+        seed:level.seed, number, selected, guide, log:history.slice(-32).map(item=>({id:item.id, before:item.before})),
+        state:game.release(state)
+      }));
+    } catch {}
+  }
+
+  function init(seed, ordinal, saved) {
+    if (grip) endGrip(false);
+    level=YarnEngine.generate(seed);game=YarnEngine.create(level);strands=new Map(level.strands.map(s=>[s.id,s]));
+    number=ordinal;state=(saved && game.restore(saved.state)) || game.initial;
+    history=[];
+    if (state!==game.initial && Array.isArray(saved?.log)) {
+      for (const item of saved.log.slice(-32)) {
+        const before=game.restore(item?.before);
+        if (before && strands.has(item.id)) history.push({before,id:item.id});
+      }
+    }
+    info=game.inspect(state);
+    if (typeof saved?.guide==='boolean') guide=saved.guide;
+    selected=strands.has(saved?.selected) ? saved.selected : level.introId || info.safe[0] || level.strands[0].id;
+    makePalette(); view.setLevel(level); view.resetView(); render();
+    announce(state===game.initial ? '先轻拉 ' + strandName(selected) + '。观察邻线怎么动，再换角度试拉。' : '已拾回上次的毛线团。');
+    persist();
+  }
+
+  function strandName(id) { return id + ' ' + strands.get(id).name; }
+
+  function select(id, focus=false) {
+    if (!strands.has(id)) return;
+    if (grip) endGrip(false);
+    selected=id;
+    if (focus && state.progress[id]<1) view.focus(id);
+    announce('已选 ' + strandName(id) + '。');
+    render(); persist();
+  }
+
+  function remember(before,id) {
+    const changed=before.progress!==state.progress || before.knots!==state.knots || before.cinches!==state.cinches;
+    if (!changed) return;
+    history.push({before:game.release(before),id});
+    if(history.length>64) history.shift();
+  }
+
+  function beginGrip(id,kind) {
+    if(grip) endGrip(false);
+    if (!strands.has(id)||state.progress[id]>=1||info.won) return false;
+    const knotted=info.knots[id];
+    if (knotted && kind!=='drag') return false;
+    selected=id;
+    grip={id,kind,before:game.release(state)};
+    lastTick=performance.now();
+    if(kind==='hold') frame=requestAnimationFrame(tick);
+    render();
+    return true;
+  }
+
+  function endGrip(say=true) {
+    if (!grip) return;
+    const {id,before}=grip;
+    grip=null;
+    if (frame) cancelAnimationFrame(frame);
+    frame=0; state=game.release(state); remember(before,id);
+    render();
+    if (say) {
+      const gate=info.blocked[id];
+      if (gate || info.knots[id]) announce('手上的力已卸掉，圈口松紧已保留。可以转个角度接着拉。');
+      else if (state.progress[id]>before.progress[id]) announce('已经收住，抽出来的这段留在线轴上。');
+    }
+    persist();
+  }
+
+  function advance(seconds) {
+    if(!grip) return;
+    const id=grip.id, old=state;
+    state=game.pull(state,id,seconds);
+    if(state.knots[id] && !old.knots[id]) {
+      const over=state.knots[id].over;
+      endGrip(false);
+      view.focus(id);
+      announce(strandName(id) + ' 绕成了结圈。可以换角度退线，也可以先抽松 ' + strandName(over) + '。','warn');
+    } else if(state.progress[id]===1 && old.progress[id]!==1) {
+      endGrip(false);
+      announce(info.won ? '五股毛线都收好了。' : strandName(id) + ' 已收完，再找下一股。');
+    } else render();
+  }
+
+  function tick(now) {
+    frame=0;
+    if(!grip || grip.kind!=='hold') return;
+    const elapsed=now-lastTick;
+    if(elapsed>=25) {
+      lastTick=now;
+      advance(Math.min(elapsed/1000,.14));
+    }
+    if(grip?.kind==='hold') frame=requestAnimationFrame(tick);
+  }
+
+  function dragMove(id, motion) {
+    if(grip?.id!==id || grip.kind!=='drag' || !motion?.world) return;
+    const previous=state;
+    state=game.drag(state,id,motion.world);
+    if(state.knots[id] && !previous.knots[id]) {
+      announce(strandName(id)+' 刚勒成了结。松手转到侧面，再顺着松口短拖。','warn');
+    } else if(previous.knots[id] && !state.knots[id]) {
+      announce(strandName(id)+' 的圈口已经退出，可以继续收线。');
+    }
+    if(state.progress[id]===1 && previous.progress[id]!==1) {
+      endGrip(false);
+      announce(info.won?'五股毛线都收好了。':strandName(id)+' 已收完。');
+    } else if(!panelFrame) {
+      panelFrame=requestAnimationFrame(()=>{panelFrame=0;render();});
+    }
+  }
+
+  function openLoop() {
+    const id=selected;
+    if(!info.knots[id]?.ready) return;
+    if(grip) endGrip(false);
+    const before=state;
+    state=game.untie(state,id);
+    remember(before,id);
+    render();persist();announce(strandName(id) + ' 的结圈已挑开，可以继续抽线。');
+  }
+
+  function undo() {
+    if(grip) endGrip(false);
+    const last=history.pop(); if(!last) return;
+    state=last.before;selected=last.id;
+    if(state.progress[selected]<1) view.focus(selected);
+    render(); persist(); announce('已撤回一手，回到刚才的线长和结圈状态。');
+  }
+
+  function requestHint() {
+    if(grip) endGrip(false);
+    const hint=game.hint(state);
+    if(!hint.id) return;
+    select(hint.id,true);
+    announce(hint.action==='untie' ? strandName(hint.id)+' 的扣线已经松动，现在可以挑开结圈。' :
+      '现在可以抽 ' + strandName(hint.id) + '。张力升高时再换手。');
+  }
+
+  function render() {
+    info=game.inspect(state);
+    const p=state.progress[selected], tension=state.tension, k=info.knots[selected], gate=info.blocked[selected];
+    const pose=game.pose(state,selected);
+    const tight=pose?.tightness || 0;
+    const atLoop=pose?.mode==='loosen';
+    const intent=state.load?.intent;
+    const pressure=Boolean(gate) && !k, finished=p>=1;
+    const total=percentage(info.progress);
+    const heat=tension>=.74?'很紧':tension>.05?'受力':'松手';
+    $('ball-number').textContent=String(number).padStart(2,'0');
+    for (const s of level.strands) {
+      const item=spools.get(s.id);
+      item.button.setAttribute('aria-pressed',String(selected===s.id));
+      item.button.classList.toggle('complete',state.progress[s.id]>=1);
+      const knot=info.knots[s.id];
+      item.button.dataset.knot=knot?(knot.ready?'loose':'tight'):'';
+      item.button.setAttribute('aria-label','选择 '+strandName(s.id)+'线头'+(knot?(knot.ready?'，结圈可挑开':'，已打结'):''));
+      drawSpool(s.id);
+    }
+    $('selected-name').textContent=strandName(selected)+'线';
+    $('strand-progress').textContent='本股已收 ' + percentage(p) + '%';
+    $('tension-word').textContent=finished?'已收完':tension>.01?heat:grip?'轻拉':'松弛';
+    $('tight-value').textContent=atLoop || k ? Math.round(tight*100)+'%' : '—';
+    $('tight-meter').setAttribute('aria-valuenow',String(Math.round(tight*100)));
+    $('tight-fill').style.transform='scaleX('+tight+')';
+    $('guide').setAttribute('aria-pressed',String(guide));
+    $('guide').disabled=$('best-angle').disabled=finished;
+    $('pocket-total').textContent='已收 '+total+'%';
+    $('tension-word').dataset.state=k?'knot':pressure?'warning':'slack';
+    $('tension').setAttribute('aria-valuenow',String(Math.round(tension*100)));
+    const fill=$('tension-fill');fill.style.transform='scaleX('+tension+')';
+    fill.style.background=tension>.73?'#ad4d39':tension>.25?'#bd873d':'#819776';
+    let feeling;
+    if(finished) feeling=info.won?'所有线股已经收回。':'这股已经收好，选另一只线轴。';
+    else if(k?.ready) feeling='压线已退开。沿松口短拖，或点「挑开结圈」。';
+    else if(atLoop && intent==='tighten') feeling='这边越拉越紧。松手，换到侧面找松口。';
+    else if(atLoop && intent==='loosen') feeling='圈口正在变松，沿这个方向再退一小段。';
+    else if(atLoop) feeling=guide?'顺着线头旁的箭头短拖，反向拉会收紧圈口。':'转到侧面，沿圈口退线；也可以先抽松压线。';
+    else feeling=grip?'留意靠近手指的几股线怎样跟着移动。':'拖空白处转球，捏住线头顺着线走。';
+    if($('feel').textContent!==feeling) $('feel').textContent=feeling;
+    const holding=grip?.kind==='hold';
+    $('pull').hidden=Boolean(k);
+    $('pull').disabled=finished||Boolean(k);
+    $('pull').classList.toggle('held',Boolean(holding));
+    $('pull-label').textContent=holding?(pressure?'松手卸力':'松手停下'):'按住抽线';
+    $('unknot').hidden=!k || !k.ready;
+    const over=k?.over || gate?.over;
+    const ready=info.remaining.find(id=>id!==selected && info.knots[id]?.ready);
+    const target=over && !k?.ready ? over : !k && ready;
+    $('follow').hidden=!target;
+    $('follow').dataset.target=target || '';
+    if(target) $('follow').textContent=target===over ? '去找 ' + strandName(over) + '线' : '回到 '+strandName(ready)+' · 结圈已松';
+    $('undo').disabled=!history.length && !grip;
+    $('hint').disabled=info.won;
+    $('locate').disabled=finished;
+    $('percent').firstChild.nodeValue=String(total);
+    $('length-bar').setAttribute('aria-valuenow',String(total));
+    $('length-bar').firstElementChild.style.transform='scaleX('+info.progress+')';
+    $('done-count').textContent=(level.strands.length-info.remaining.length)+' / '+level.strands.length;
+    $('knot-count').textContent=String(Object.keys(state.knots).length);
+    $('knot-jump').disabled=!Object.keys(state.knots).length;
+    $('win').hidden=!info.won;
+    if(info.won) $('win-detail').textContent=state.totalKnots ?
+      '五股毛线都上了轴，途中挑开了 ' + state.totalKnots + ' 个结。' : '五股毛线都上了轴，一路顺顺当当。';
+    view.show(state,{selected,pulling:Boolean(grip),tension,pose,guide});
+  }
+
+  const view=YarnView.mount($('ball-stage'),{
+    onSelect:id=>select(id), onPullStart:id=>beginGrip(id,'drag'),
+    onPullMove:dragMove,onPullEnd:id=>{if(grip?.kind==='drag' && grip.id===id)endGrip();}
+  });
+
+  const pull=$('pull');
+  pull.addEventListener('pointerdown',e=>{
+    if (e.button!==0 || !e.isPrimary) return;
+    e.preventDefault();
+    if(beginGrip(selected,'hold')) pull.setPointerCapture(e.pointerId);
+  });
+  for(const event of ['pointerup','pointercancel','lostpointercapture']) {
+    pull.addEventListener(event,()=>{if(grip?.kind==='hold') endGrip();});
+  }
+  pull.addEventListener('keydown',e=>{
+    if(e.key!==' ' && e.key!=='Enter') return;
+    e.preventDefault();if(!e.repeat && !grip) beginGrip(selected,'hold');
+  });
+  pull.addEventListener('keyup',e=>{
+    if(e.key===' ' || e.key==='Enter'){e.preventDefault();if(grip?.kind==='hold') endGrip();}
+  });
+  pull.addEventListener('click',e=>{
+    if(e.detail===0 && !grip && beginGrip(selected,'pulse')) {advance(.32);endGrip();}
+  });
+  pull.addEventListener('contextmenu',e=>e.preventDefault());
+  pull.addEventListener('blur',()=>{if(grip?.kind==='hold') endGrip(false);});
+  window.addEventListener('blur',()=>endGrip(false));
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)endGrip(false);});
+  $('guide').onclick=()=>{
+    guide=!guide; render(); persist();
+    announce(guide?'已显示空间拉向。拖空白处旋转，箭头会随视角改变。':'已收起方向提示。');
+  };
+  $('best-angle').onclick=()=>{
+    const pose=game.pose(state,selected);
+    if(!pose) return;
+    guide=true;
+    view.focusDirection(selected,pose.direction);
+    render(); persist();
+    announce('正在侧看 '+strandName(selected)+'。捏住线头，沿箭头短拖。');
+  };
+  $('locate').onclick=()=>view.focus(selected);
+  $('follow').onclick=()=>{
+    const id=$('follow').dataset.target;
+    if(id) select(id,true);
+  };
+  $('knot-jump').onclick=()=>{
+    const id=info.remaining.find(i=>info.knots[i]?.ready) || info.remaining.find(i=>info.knots[i]);
+    if(id) select(id,true);
+  };
+  $('unknot').onclick=openLoop;
+  $('hint').onclick=requestHint;$('undo').onclick=undo;
+  $('restart').onclick=()=>init(level.seed,number);
+  function next(){init(Math.floor(Math.random()*4294967296),number+1);}
+  $('next-ball').onclick=next;$('win-next').onclick=next;
+  $('turn-left').onclick=()=>view.turn('left');$('turn-right').onclick=()=>view.turn('right');$('view-reset').onclick=()=>view.resetView();
+  const help=$('help');
+  $('help-open').onclick=()=>{endGrip(false);help.showModal();};
+  $('help-close').onclick=()=>help.close();
+  help.addEventListener('click',e=>{
+    if(e.target!==help) return;
+    const r=help.getBoundingClientRect();
+    if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)help.close();
+  });
+  drawMark();
+  let saved;
+  try{saved=JSON.parse(localStorage.getItem(storageKey));}catch{}
+  const valid=Number.isInteger(saved?.seed)&&saved.seed>=0&&saved.seed<=0xffffffff&&Number.isSafeInteger(saved.number)&&saved.number>=1;
+  init(valid?saved.seed:YarnEngine.firstSeed,valid?saved.number:1,valid?saved:null);
+})();
+
+</script>
+</body>
+</html>
