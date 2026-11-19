@@ -6,7 +6,7 @@
 *{box-sizing:border-box}body{margin:0;background:#efe9db;color:#342d23;font:15px/1.5 system-ui,sans-serif}.wrap{max-width:720px;margin:auto;padding:12px max(12px,env(safe-area-inset-right)) 16px max(12px,env(safe-area-inset-left))}header,footer,.row{display:flex;align-items:center;justify-content:space-between;gap:10px}h1,p{margin:0}h1{font:700 clamp(24px,5vw,36px)/1.1 "Songti SC",serif}header p{color:#645849;margin-top:5px}button,a{font:inherit}button{min-height:44px;padding:6px 12px;border:1px solid #b9a98f;border-radius:9px;background:#fff8eb;color:#352c20;cursor:pointer;touch-action:manipulation}a{color:#624032}.stage{position:relative;margin:10px 0;background:#e2d5bc;border:1px solid #bca98c;border-radius:18px;overflow:hidden}canvas{display:block;width:100%;height:clamp(234px,52svh,480px);touch-action:none;user-select:none;-webkit-user-select:none}.stage p{position:absolute;bottom:8px;left:10px;border-radius:8px;padding:4px 8px;background:#fff8e9;color:#564735;font-size:12px;pointer-events:none}.panel{padding:10px 12px;background:#fbf7ed;border:1px solid #c9bca6;border-radius:13px}.row{justify-content:flex-start;flex-wrap:wrap}.row button[aria-pressed=true]{background:#d8e1d3;border-color:#647764}.row button{font-size:13px}.red{color:#93462f}.green{color:#445f49}.blue{color:#365d73}#feedback{min-height:3em;margin:7px 0 4px}footer{margin-top:10px;font-size:13px}dialog{width:min(430px,94%);border:1px solid #b9a98f;border-radius:14px;background:#fff9ee;color:#342d23}dialog::backdrop{background:#342d2380}dialog p{margin:0 0 12px}@media(max-height:660px){canvas{height:clamp(210px,44svh,280px)}}
 </style></head>
 <body><main class="wrap">
-<header><div><h1>拆毛线啊！</h1><p>三股绳结</p></div><button id="help" type="button">怎么玩</button></header>
+<header><div><h1>拆毛线啊！</h1><p>三股绳结 · 固定绳尾</p></div><button id="help" type="button">怎么玩</button></header>
 <div class="stage"><canvas id="board" aria-label="可拖动的立体三股绳结"></canvas><p id="view-note">拖空白转动 · 拖线头或线身</p></div>
 <section class="panel" aria-label="抓取位置">
 <div class="row" id="picks">
@@ -17,7 +17,7 @@
 </section>
 <footer><a href="./">返回毛线团</a><span id="result">A 仍穿在圈里</span></footer>
 </main>
-<dialog id="instructions"><h2>解开这枚结</h2><p>直接拖线条，或先点下方的线头、线身、圈边、压线，画布会标出抓取位置。拖空白转动绳结。</p><p>手感卡住时，试着把线往结里送。观察绿圈和蓝线哪里接触，再想办法腾出能让线头通过的空间。</p><form method="dialog"><button>回来试试</button></form></dialog>
+<dialog id="instructions"><h2>解开这枚结</h2><p>直接拖线条，或先点下方的线头、线身、圈边、压线，画布会标出抓取位置。拖空白转动绳结。</p><p>手感卡住时，试着把线往结里送。观察绿圈和蓝线哪里接触，再想办法腾出能让线头通过的空间。手指在当前屏幕平面内拖动，想往深处送线时，先把结转到侧面。小铜钉固定了绳尾。</p><form method="dialog"><button>回来试试</button></form></dialog>
 <script>
 'use strict';
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -26,64 +26,192 @@ const mul=(a,n)=>a.map(v=>v*n);
 const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
 const sub=(a,b)=>add(a,mul(b,-1));
 const unit=a=>mul(a,1/(Math.hypot(...a)||1));
-const normal=[0,0,1], sideways=[0,1,0], spread=[1,0,0];
-const cordRadius=.095, headRadius=.155, clearance=cordRadius+headRadius;
-const crossingOffset=.28, eyeClearance=crossingOffset+clearance;
-function fresh(){return {eye:.38,feed:.25,press:0,tip:.84,tension:0,escaped:false};}
-// The eye lies in z=0. The front part of the blue saddle lies across it.
-function gap(s){return Math.min(s.eye, .035+s.press);}
-function feedLimit(s){return .25+.78*s.feed;}
-function move(s,id,d){
-  if(s.escaped)return '';
-  if(id==='body'){
-    s.feed=clamp(s.feed+d,0,1.12);
-    s.eye=Math.min(s.eye,feedLimit(s));s.tension=0;
-    return d>0?'送回的线弯了起来，圈口有余量了。':'线身上的松弛被抽走了。';
-  }
-  if(id==='cross'){
-    const reach=Math.max(.08, .21+Math.max(0,s.feed-.34)*1.65);
-    s.press=clamp(s.press+d,0,reach);s.tension=0;
-    return s.press<clearance?'蓝线还压着过线的位置。送回一些珊瑚色线身，再试着挪蓝线。':'蓝线已经挪开了，看看绿圈还能不能撑大。';
-  }
-  if(id==='loop'){
-    const limit=Math.max(.20,Math.min(feedLimit(s),.25+s.press));
-    s.eye=clamp(s.eye+d,.19,limit);
-    s.tension=0;
-    return gap(s)>=clearance && s.eye>=eyeClearance?'圈口撑开了。转到侧面，把 A 线头往它穿来的方向送。':'圈边还有阻力。看看珊瑚色线身有没有松量，蓝线有没有挪够。';
-  }
-  if(d>0 && s.tip>=0){
-    s.tip=clamp(s.tip+d*.58,.075,1.43);
-    s.feed=Math.max(0,s.feed-d*.61);
-    s.eye=Math.max(.19,Math.min(feedLimit(s),s.eye-d*.43));
-    s.press=Math.max(0,s.press-d*.30);s.tension=Math.min(1,s.tension+d*2);
-    return '线头往外拉，松量从线身移走，绿圈和蓝线一起收紧了。';
-  }
-  if(d<0){
-    const next=s.tip+d*.90;
-    // The larger, softened tip needs the open eye, and the saddle must be
-    // outside the swept radius. Crossing is continuous, including long drags.
-    const bluePlane=.29;
-    const blockedAt=gap(s)<clearance && s.tip>=bluePlane ? bluePlane+clearance : s.eye<eyeClearance && s.tip>=0 ? clearance : -Infinity;
-    if(next<blockedAt){
-      s.tip=Math.min(s.tip,blockedAt);s.tension=Math.min(1,s.tension-d);
-      return '线头顶住圈口了。再送一点线身，挪开蓝线，把绿圈撑大。';
+// Distances use the same world units as the rendered rope radius.
+const cordRadius=.075, headRadius=cordRadius;
+const skin=.015, diameter=cordRadius*2;
+const len=a=>Math.hypot(...a);
+const lerp=(a,b,t)=>add(a,mul(sub(b,a),t));
+function sample(points,step=.195){
+  const out=[points[0]];
+  let carry=0;
+  for(let i=1;i<points.length;i++){
+    let a=points[i-1], b=points[i], remaining=len(sub(b,a));
+    while(remaining+carry>=step){
+      a=lerp(a,b,(step-carry)/remaining);
+      out.push(a);remaining=len(sub(b,a));carry=0;
     }
-    s.tip=next;
-    if(s.tip<-.26){s.tip=-.48;s.escaped=true;s.tension=0;return 'A 的线头已经穿回圈口，三股绳分开了！';}
-    return '线头正在往圈里退，沿这个方向再送一点。';
+    carry+=remaining;
   }
-  s.tip=Math.min(.12,s.tip+d);
-  return '线头又往圈口靠近了。';
+  if(carry>step*.58)out.push(points.at(-1));else out[out.length-1]=points.at(-1);
+  return out;
 }
-
+function fresh(){
+  const ring=Array.from({length:41},(_,i)=>{
+    const theta=-Math.PI/2+i*Math.PI/20;
+    return [.43*Math.cos(theta),.46*Math.sin(theta),-.13+.26*i/40];
+  });
+  const paths={
+    A:spline([[-1.69,-.81,-.82],[-.95,-.83,-.80],[-.61,-.63,-.87],[.04,-.52,-.61],[.24,-.31,-.40],[.255,-.10,-.13],[.24,.035,.18],[.31,.11,.52],[.45,.20,.79]]),
+    B:[[-1.6,-.74,-.32],[-.79,-.63,-.24],...ring,[.82,-.65,.24],[1.60,-.79,.30]],
+    C:spline([[-1.59,.57,-.21],[-.93,.36,.21],[-.53,.13,.45],[-.15,-.04,.53],[.30,-.05,.53],[.80,.18,.36],[1.58,.53,-.17]])
+  };
+  const ropes=Object.entries(paths).map(([id,path])=>{
+    const p=sample(path), weights=p.map((_,i)=>i===0 || (id!=='A'&&i===p.length-1)?0:1);
+    return {id,p,weights,rest:p.slice(1).map((x,i)=>len(sub(x,p[i])))};
+  });
+  const s={ropes,segments:[],eye:[],escaped:false,metrics:{maxOverlap:0,rejected:0,maxStretch:0,contacts:0}};
+  for(const r of ropes)for(let i=0;i<r.p.length-1;i++)s.segments.push({r,i});
+  const green=ropes[1].p;
+  for(let i=0;i<green.length;i++)if(Math.abs(green[i][0])<.55&&green[i][1]>-.54)s.eye.push(i);
+  for(let i=0;i<70;i++)solve(s,null,null,null);
+  if(overlap(s)>1e-4)throw Error('Initial ropes overlap');
+  return s;
+}
+function closest(a,b,c,d){
+  const u=sub(b,a),v=sub(d,c),w=sub(a,c),aa=dot(u,u),bb=dot(u,v),cc=dot(v,v);
+  const dd=dot(u,w),ee=dot(v,w),det=aa*cc-bb*bb;
+  let t=det>1e-12?clamp((bb*ee-cc*dd)/det,0,1):0;
+  let q=clamp((bb*t+ee)/Math.max(cc,1e-12),0,1);
+  t=clamp((bb*q-dd)/Math.max(aa,1e-12),0,1);
+  return [t,q,sub(lerp(a,b,t),lerp(c,d,q))];
+}
+function visit(s,limit,contact){
+  const segments=s.segments;
+  for(let j=0;j<segments.length;j++)for(let k=j+1;k<segments.length;k++){
+    const {r:a,i}=segments[j],{r:b,i:h}=segments[k];
+    if(a===b&&h-i<2)continue;
+    const p=a.p[i],q=a.p[i+1],u=b.p[h],v=b.p[h+1];
+    let near=true;
+    for(let n=0;n<3;n++)if(Math.min(p[n],q[n])-Math.max(u[n],v[n])>limit || Math.min(u[n],v[n])-Math.max(p[n],q[n])>limit){near=false;break;}
+    if(!near)continue;
+    const [t,jt,delta]=closest(p,q,u,v),distance=len(delta);
+    if(distance<limit)contact(a,i,b,h,t,jt,delta,distance);
+  }
+}
+function overlap(s){
+  let worst=0;
+  visit(s,diameter,(a,i,b,j,t,u,n,d)=>{worst=Math.max(worst,diameter-d);});
+  return worst;
+}
+// For each nearby pair, bound the distance over the entire substep.
+// The distance between moving capsules is Lipschitz in their relative endpoint motion.
+function clearSweep(s,old,end){
+  const records=s.segments.map(({r,i})=>{
+    const strand=s.ropes.indexOf(r),a=old[strand][i],b=old[strand][i+1],
+      c=end[strand][i],d=end[strand][i+1];
+    const low=a.map((_,k)=>Math.min(a[k],b[k],c[k],d[k]));
+    const high=a.map((_,k)=>Math.max(a[k],b[k],c[k],d[k]));
+    return {r,i,a,b,c,d,low,high,da:sub(c,a),db:sub(d,b)};
+  });
+  for(let j=0;j<records.length;j++)for(let k=j+1;k<records.length;k++){
+    const a=records[j],b=records[k];
+    if(a.r===b.r&&b.i-a.i<2)continue;
+    if(a.low.some((v,i)=>v-b.high[i]>diameter||b.low[i]-a.high[i]>diameter))continue;
+    const speed=Math.max(...[a.da,a.db].flatMap(x=>[b.da,b.db].map(y=>len(sub(x,y)))));
+    function separated(from,to,depth){
+      const t=(from+to)*.5;
+      const distance=len(closest(lerp(a.a,a.c,t),lerp(a.b,a.d,t),lerp(b.a,b.c,t),lerp(b.b,b.d,t))[2]);
+      if(distance-speed*(to-from)*.5>=diameter-1e-4)return true;
+      if(distance<diameter-1e-4||depth===6)return false;
+      return separated(from,t,depth+1)&&separated(t,to,depth+1);
+    }
+    if(!separated(0,1,0))return false;
+  }
+  return true;
+}
+function solve(s,grab,target,previous){
+  for(const r of s.ropes){
+    for(let j=0;j<r.rest.length;j++){
+      const i=r.rest.length-1-j, p=r.p[i],q=r.p[i+1],delta=sub(q,p), d=len(delta);
+      const wa=r.weights[i],wb=r.weights[i+1];
+      if(d<1e-9||wa+wb===0)continue;
+      const n=mul(delta,(d-r.rest[i])/(d*(wa+wb)));
+      r.p[i]=add(p,mul(n,wa));r.p[i+1]=sub(q,mul(n,wb));
+    }
+  }
+  if(grab){
+    const {r,i,t}=grab,a=r.p[i],b=r.p[i+1];
+    const u=1-t,v=t,inv=r.weights[i]*u*u+r.weights[i+1]*v*v;
+    if(inv>0){
+      const delta=mul(sub(target,lerp(a,b,t)),.42/inv);
+      r.p[i]=add(a,mul(delta,r.weights[i]*u));r.p[i+1]=add(b,mul(delta,r.weights[i+1]*v));
+    }
+  }
+  visit(s,diameter+skin,(a,i,b,j,t,u,delta,d)=>{
+    const ca=[1-t,t],cb=[1-u,u];
+    const wa=ca.map((v,k)=>v*a.weights[i+k]),wb=cb.map((v,k)=>v*b.weights[j+k]);
+    const inv=dot(wa,ca)+dot(wb,cb);
+    if(inv===0||d<1e-9)return;
+    const n=mul(delta,1/d), depth=diameter+skin-d;
+    let correction=mul(n,depth/inv);
+    if(previous){
+      const oldA=previous[s.ropes.indexOf(a)],oldB=previous[s.ropes.indexOf(b)];
+      const motion=sub(delta,sub(lerp(oldA[i],oldA[i+1],t),lerp(oldB[j],oldB[j+1],u)));
+      const tangent=sub(motion,mul(n,dot(motion,n))),slip=len(tangent);
+      if(slip>1e-8)correction=sub(correction,mul(tangent,Math.min(.32*depth/slip,.45)/inv));
+    }
+    for(let k=0;k<2;k++){
+      a.p[i+k]=add(a.p[i+k],mul(correction,wa[k]));
+      b.p[j+k]=sub(b.p[j+k],mul(correction,wb[k]));
+    }
+    if(a!==b)s.metrics.contacts++;
+  });
+}
+function poseOf(grab){return lerp(grab.r.p[grab.i],grab.r.p[grab.i+1],grab.t);}
+function advanceGrab(s,grab,to){
+  const from=poseOf(grab),delta=sub(to,from),n=Math.min(10,Math.ceil(len(delta)/.021));
+  for(let k=0;k<n;k++){
+    const old=s.ropes.map(r=>r.p.slice());
+    const current=poseOf(grab),direction=sub(to,current),length=len(direction);
+    const target=add(current,mul(direction,Math.min(1,.021/Math.max(length,1e-10))));
+    for(let i=0;i<18;i++)solve(s,grab,target,i<4?old:null);
+    const end=s.ropes.map(r=>r.p);
+    const stretch=Math.max(...s.ropes.flatMap(r=>r.rest.map((length,i)=>Math.abs(len(sub(r.p[i],r.p[i+1]))/length-1))));
+    const penetration=overlap(s);
+    const jump=Math.max(...end.flatMap((points,i)=>points.map((p,j)=>len(sub(old[i][j],p)))));
+    if(penetration>1e-4 || stretch>.065 || jump>.046 || !clearSweep(s,old,end)){
+      s.ropes.forEach((r,i)=>r.p=old[i]);s.metrics.rejected++;break;
+    }
+    s.ropes.forEach((r,i)=>r.p=end[i]);
+    s.metrics.maxOverlap=Math.max(s.metrics.maxOverlap,penetration);
+    s.metrics.maxStretch=Math.max(s.metrics.maxStretch,stretch);
+  }
+  s.escaped=isClear(s);
+}
+function isClear(s){
+  const [a,b]=s.ropes, ring=s.eye.map(i=>b.p[i]);
+  const mid=mul(ring.reduce(add),1/ring.length),tip=a.p.at(-1);
+  if(tip[2]>mid[2]-.24)return false;
+  for(let j=0;j<a.p.length-1;j++){
+    const origin=a.p[j],dir=sub(a.p[j+1],origin);
+    for(let i=0;i<ring.length;i++){
+      const edge=sub(ring[i],mid),next=sub(ring[(i+1)%ring.length],mid);
+      const cross=(x,y)=>[x[1]*y[2]-x[2]*y[1],x[2]*y[0]-x[0]*y[2],x[0]*y[1]-x[1]*y[0]];
+      const h=cross(dir,next),det=dot(edge,h);
+      if(Math.abs(det)<1e-8)continue;
+      const v=sub(origin,mid),u=dot(v,h)/det,q=cross(v,edge),w=dot(dir,q)/det,d=dot(next,q)/det;
+      if(u>=0&&w>=0&&u+w<=1&&d>=0&&d<=1)return false;
+    }
+  }
+  return true;
+}
+function choice(s,id){
+  const r=s.ropes[{tip:0,body:0,loop:1,cross:2}[id]];
+  const i=id==='tip'?r.p.length-2:id==='body'?Math.floor(r.p.length*.45):id==='loop'?s.eye[Math.floor(s.eye.length*.25)]:Math.floor(r.p.length*.5);
+  return {r,i:Math.min(i,r.p.length-2),t:id==='tip'?1:.5,id};
+}
+function geometry(s){
+  return {strands:Object.fromEntries(s.ropes.map(r=>[r.id,r.p])),
+    handles:Object.fromEntries(Object.keys(labels).map(id=>[id,poseOf(choice(s,id))]))};
+}
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
 const $=id=>document.getElementById(id);
 const colors={A:['#743a2c','#b96549','#efac82'],B:['#374b3c','#658367','#b1c7a0'],C:['#304954','#547b8a','#9ec3cf']};
 const labels={tip:'A 头',body:'A 身',loop:'B 圈',cross:'C 压'};
-const axes={tip:normal,body:sideways,loop:spread,cross:sideways};
-const advice={tip:'把 A 线头朝圈里推。',body:'把 A 的线身朝圈口送，给圈边留出余量。',loop:'朝外拉 B 的圈边，让圈口变大。',cross:'沿圈面抬开 C 的压线。'};
+const axes={tip:[-.83,-.24,-.70],body:[0,.35,-.35],loop:[1,.20,0],cross:[0,1,.04]};
+const advice={tip:'把 A 线头朝圈里推。',body:'从圈后抓住 A 的线身，斜向上送，让它重新弯出一截松线。',loop:'朝外拉 B 的圈边，让圈口变大。',cross:'沿圈面抬开 C 的压线。'};
 let state=fresh(), yaw=.79,pitch=.25,w=0,h=0,scale=1,marks=[],hit=[],grip=null,selected=null,hints=false,paint=0;
-const away={A:[-1.25,-.12,-.9],B:[.78,0,0],C:[0,1.0,.2]};
+
 function camera(){const a=Math.sin(yaw),b=Math.cos(yaw),c=Math.sin(pitch),d=Math.cos(pitch);return [[b,0,-a],[-a*c,d,-b*c],[a*d,c,b*d]];}
 function project(p,basis){return [w*.5+scale*dot(p,basis[0]),h*.48-scale*dot(p,basis[1]),dot(p,basis[2])];}
 function spline(points){
@@ -96,30 +224,6 @@ function spline(points){
     }
   }
   return result.concat([points.at(-1)]);
-}
-function geometry(s){
-  const r=s.eye, f=s.feed;
-  const eye=[];
-  for(let i=0;i<=64;i++){
-    const t=-Math.PI/2+Math.PI*2*i/64;
-    eye.push([Math.cos(t)*r,Math.sin(t)*r,.18*i/64-.09]);
-  }
-  // The ends of the loop cross at its neck, at distinct depths.
-  const green=[...spline([[-1.76,-.72,-.26],[-.81,-.67,-.28],[0,-r,-.09]]),
-    ...eye.slice(1),...spline([[0,-r,.09],[.79,-.74,.28],[1.64,-1,.24]]).slice(1)];
-  const blue=spline([[-1.61,.42,-.70],[-1.02,.40+s.press,-.27],[-.62,.19+s.press,.28],
-    [0,.035+s.press,.29],[.65,.16+s.press,.29],[1.38,.65+s.press,-.35]]);
-  // Keep the segment through the eye straight. Slack appears as a bight
-  // behind the eye, where the hand feeds the standing part.
-  const axisX=Math.min(crossingOffset,Math.max(0,r-cordRadius*2));
-  const tip=[axisX,0,s.tip], neck=[axisX,0,Math.min(-.37,s.tip-.14)];
-  const bight=[-.57,-.92+.48*f,-.89-.29*f];
-  const red=[...spline([[-1.58,-.93,-1.23],[-.95,-.98-.40*f,-1.34],bight,neck]),
-    ...Array.from({length:20},(_,i)=>add(neck,mul(sub(tip,neck),(i+1)/20)))];
-  const strands={A:red,B:green,C:blue};
-  const handles={tip,body:bight,loop:[r,0,-.044],cross:[.65,.16+s.press,.29]};
-  if(s.escaped)for(const k of Object.keys(strands))strands[k]=strands[k].map(p=>add(p,away[k]));
-  return {strands,handles};
 }
 function line(a,b,width,color){
   ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);
@@ -137,8 +241,14 @@ function draw(){
     const p=points.map(q=>project(q,basis));
     for(let i=1;i<p.length;i++)segments.push({id,a:p[i-1],b:p[i],i,z:(p[i-1][2]+p[i][2])*.5});
   }
-  if(!state.escaped){
+  {
     const p=project(handles.tip,basis); segments.push({id:'A',a:p,b:[p[0]+.01,p[1],p[2]],i:0,z:p[2],head:true});
+  }
+  for(const rope of state.ropes)for(let i=0;i<rope.p.length;i++){
+    if(rope.weights[i])continue;
+    const [x,y]=project(rope.p[i],basis);
+    ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);ctx.fillStyle='#66523a';ctx.fill();
+    ctx.beginPath();ctx.arc(x-1,y-1,4.5,0,Math.PI*2);ctx.fillStyle='#c5a471';ctx.fill();
   }
   hit=segments.sort((a,b)=>a.z-b.z);
   for(const {id,a,b,i,head} of hit){
@@ -153,7 +263,7 @@ function draw(){
     }
   }
   marks=[];
-  if(!state.escaped){
+  {
     const order=selected?[selected]:['tip','body','loop','cross'];
     for(const id of order){
       const p=project(handles[id],basis), offset={tip:[-27,-23],body:[-18,26],loop:[30,-13],cross:[20,26]}[id];
@@ -164,7 +274,7 @@ function draw(){
       ctx.strokeStyle='#75644e';ctx.lineWidth=1;ctx.stroke();
       ctx.font='bold 12px system-ui';ctx.textBaseline='middle';ctx.textAlign='center';ctx.fillStyle='#352c20';ctx.fillText(labels[id],x,y);
       if(hints&&id===selected){
-        const dir=project(add(handles[id],mul(axes[id],id==='tip'?-1:1)),basis);
+        const dir=project(add(handles[id],axes[id]),basis);
         const d=unit(sub(dir.slice(0,2),p.slice(0,2)));
         const a=[x,y-15],b=add(a,mul(d,34));
         line(a,b,3,'#3b5745');
@@ -187,11 +297,14 @@ function select(id){
 }
 function nearest(x,y){
   const label=marks.filter(m=>Math.hypot(x-m.x,y-m.y)<23).sort((a,b)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-b.x,y-b.y))[0];
-  if(label)return label.id;
+  if(label)return choice(state,label.id);
   for(const s of [...hit].reverse()){
     const a=s.a.slice(0,2),d=sub(s.b.slice(0,2),a),v=sub([x,y],a);
     if(Math.hypot(...sub(v,mul(d,clamp(dot(v,d)/(dot(d,d)||1),0,1))))<10){
-      return s.id==='A'?(s.head||s.i>46?'tip':'body'):s.id==='B'?'loop':'cross';
+      if(s.head)return choice(state,'tip');
+      const r=state.ropes.find(r=>r.id===s.id);
+      const t=clamp(dot(v,d)/(dot(d,d)||1),0,1);
+      return {r,i:s.i-1,t,id:s.id==='A'?'body':s.id==='B'?'loop':'cross'};
     }
   }
   return null;
@@ -199,33 +312,33 @@ function nearest(x,y){
 canvas.addEventListener('pointerdown',e=>{
   if(grip||e.button!==0)return;
   const box=canvas.getBoundingClientRect(), x=e.clientX-box.left,y=e.clientY-box.top;
-  const id=state.escaped?null:nearest(x,y);
-  grip={pointer:e.pointerId,id,x:e.clientX,y:e.clientY};
+  const grab=nearest(x,y);
+  grip={pointer:e.pointerId,grab,target:grab&&poseOf(grab),x:e.clientX,y:e.clientY};
   canvas.setPointerCapture(e.pointerId);
-  if(id)select(id);
+  if(grab)select(grab.id);
 });
 canvas.addEventListener('pointermove',e=>{
   if(grip?.pointer!==e.pointerId)return;
   const dx=e.clientX-grip.x,dy=e.clientY-grip.y;
   grip.x=e.clientX;grip.y=e.clientY;
-  if(!grip.id){yaw+=dx*.009;pitch=clamp(pitch+dy*.008,-1.35,1.35);invalidate();return;}
+  if(!grip.grab){yaw+=dx*.009;pitch=clamp(pitch+dy*.008,-1.35,1.35);invalidate();return;}
   const [right,up]=camera();
-  const axis=axes[grip.id];
-  const sx=dot(right,axis),sy=-dot(up,axis),visible=sx*sx+sy*sy;
-  if(visible<.09){$('feedback').textContent='这个方向几乎正对屏幕，转到侧面再拖。';return;}
-  const travel=(dx*sx+dy*sy)/(scale*Math.sqrt(visible));
-  if(Math.abs(travel)<.001)return;
-  const message=move(state,grip.id,travel);
-  if(message&&$('feedback').textContent!==message)$('feedback').textContent=message;
-  if(state.escaped){$('result').textContent='绳结已解开';select(null);}
+  grip.target=add(grip.target,mul(sub(mul(right,dx),mul(up,dy)),1/scale));
+  advanceGrab(state,grip.grab,grip.target);
+  // Clamp the spring lag so a blocked gesture does not bank force.
+  const present=poseOf(grip.grab),lag=sub(grip.target,present);
+  if(len(lag)>.10)grip.target=add(present,mul(unit(lag),.10));
+  $('result').textContent=state.escaped?'绳结已解开':'A 仍穿在圈里';
+  const text=len(lag)>.052?'线被别的线段抵住了。试着送线，或从另一面拉开压住它的线。':
+    '可以松手换一段抓，拖空白转动视角。';
+  if($('feedback').textContent!==text)$('feedback').textContent=text;
   invalidate();
 });
 for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,e=>{
-  if(grip?.pointer===e.pointerId){grip=null;state.tension=0;invalidate();}
+  if(grip?.pointer===e.pointerId){grip=null;invalidate();}
 });
 for(const b of document.querySelectorAll('[data-pick]'))b.onclick=()=>{
   const id=b.dataset.pick;
-  if(state.escaped)return;
   select(id);
   const [right,up]=camera();
   if(Math.hypot(dot(right,axes[id]),dot(up,axes[id]))<.50){yaw=.79;pitch=.25;invalidate();}
