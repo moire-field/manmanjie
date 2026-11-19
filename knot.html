@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>拆毛线啊！ · 三股绳结</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#efe9db;color:#342d23;font:15px/1.5 system-ui,sans-serif}.wrap{max-width:720px;margin:auto;padding:12px max(12px,env(safe-area-inset-right)) 16px max(12px,env(safe-area-inset-left))}header,footer,.row{display:flex;align-items:center;justify-content:space-between;gap:10px}h1,p{margin:0}h1{font:700 clamp(24px,5vw,36px)/1.1 "Songti SC",serif}header p{color:#645849;margin-top:5px}button,a{font:inherit}button{min-height:44px;padding:6px 12px;border:1px solid #b9a98f;border-radius:9px;background:#fff8eb;color:#352c20;cursor:pointer;touch-action:manipulation}a{color:#624032}.stage{position:relative;margin:10px 0;background:#e2d5bc;border:1px solid #bca98c;border-radius:18px;overflow:hidden}canvas{display:block;width:100%;height:clamp(234px,52svh,480px);touch-action:none;user-select:none;-webkit-user-select:none}.stage p{position:absolute;bottom:8px;left:10px;border-radius:8px;padding:4px 8px;background:#fff8e9;color:#564735;font-size:12px;pointer-events:none}.panel{padding:10px 12px;background:#fbf7ed;border:1px solid #c9bca6;border-radius:13px}.row{justify-content:flex-start;flex-wrap:wrap}.row button[aria-pressed=true]{background:#d8e1d3;border-color:#647764}.row button{font-size:13px}.red{color:#93462f}.green{color:#445f49}.blue{color:#365d73}#feedback{min-height:3em;margin:7px 0 4px}footer{margin-top:10px;font-size:13px}dialog{width:min(430px,94%);border:1px solid #b9a98f;border-radius:14px;background:#fff9ee;color:#342d23}dialog::backdrop{background:#342d2380}dialog p{margin:0 0 12px}@media(max-height:660px){canvas{height:clamp(210px,44svh,280px)}}
+</style></head>
+<body><main class="wrap">
+<header><div><h1>拆毛线啊！</h1><p>三股绳结</p></div><button id="help" type="button">怎么玩</button></header>
+<div class="stage"><canvas id="board" aria-label="可拖动的立体三股绳结"></canvas><p id="view-note">拖空白转动 · 拖线头或线身</p></div>
+<section class="panel" aria-label="抓取位置">
+<div class="row" id="picks">
+<button data-pick="tip" class="red">A 线头</button><button data-pick="body" class="red">A 线身</button><button data-pick="loop" class="green">B 圈边</button><button data-pick="cross" class="blue">C 压线</button>
+</div>
+<p id="feedback" role="status">沿着珊瑚色 A 看一看，它是从哪一面穿过绿圈的？</p>
+<div class="row"><button id="hint" aria-pressed="false">拉向提示</button><button id="reset-view">复位视角</button><button id="reset">重打这个结</button></div>
+</section>
+<footer><a href="./">返回毛线团</a><span id="result">A 仍穿在圈里</span></footer>
+</main>
+<dialog id="instructions"><h2>解开这枚结</h2><p>直接拖线条，或先点下方的线头、线身、圈边、压线，画布会标出抓取位置。拖空白转动绳结。</p><p>手感卡住时，试着把线往结里送。观察绿圈和蓝线哪里接触，再想办法腾出能让线头通过的空间。</p><form method="dialog"><button>回来试试</button></form></dialog>
+<script>
+'use strict';
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const add=(a,b)=>a.map((v,i)=>v+b[i]);
+const mul=(a,n)=>a.map(v=>v*n);
+const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+const sub=(a,b)=>add(a,mul(b,-1));
+const unit=a=>mul(a,1/(Math.hypot(...a)||1));
+const normal=[0,0,1], sideways=[0,1,0], spread=[1,0,0];
+const cordRadius=.095, headRadius=.155, clearance=cordRadius+headRadius;
+const crossingOffset=.28, eyeClearance=crossingOffset+clearance;
+function fresh(){return {eye:.38,feed:.25,press:0,tip:.84,tension:0,escaped:false};}
+// The eye lies in z=0. The front part of the blue saddle lies across it.
+function gap(s){return Math.min(s.eye, .035+s.press);}
+function feedLimit(s){return .25+.78*s.feed;}
+function move(s,id,d){
+  if(s.escaped)return '';
+  if(id==='body'){
+    s.feed=clamp(s.feed+d,0,1.12);
+    s.eye=Math.min(s.eye,feedLimit(s));s.tension=0;
+    return d>0?'送回的线弯了起来，圈口有余量了。':'线身上的松弛被抽走了。';
+  }
+  if(id==='cross'){
+    const reach=Math.max(.08, .21+Math.max(0,s.feed-.34)*1.65);
+    s.press=clamp(s.press+d,0,reach);s.tension=0;
+    return s.press<clearance?'蓝线还压着过线的位置。送回一些珊瑚色线身，再试着挪蓝线。':'蓝线已经挪开了，看看绿圈还能不能撑大。';
+  }
+  if(id==='loop'){
+    const limit=Math.max(.20,Math.min(feedLimit(s),.25+s.press));
+    s.eye=clamp(s.eye+d,.19,limit);
+    s.tension=0;
+    return gap(s)>=clearance && s.eye>=eyeClearance?'圈口撑开了。转到侧面，把 A 线头往它穿来的方向送。':'圈边还有阻力。看看珊瑚色线身有没有松量，蓝线有没有挪够。';
+  }
+  if(d>0 && s.tip>=0){
+    s.tip=clamp(s.tip+d*.58,.075,1.43);
+    s.feed=Math.max(0,s.feed-d*.61);
+    s.eye=Math.max(.19,Math.min(feedLimit(s),s.eye-d*.43));
+    s.press=Math.max(0,s.press-d*.30);s.tension=Math.min(1,s.tension+d*2);
+    return '线头往外拉，松量从线身移走，绿圈和蓝线一起收紧了。';
+  }
+  if(d<0){
+    const next=s.tip+d*.90;
+    // The larger, softened tip needs the open eye, and the saddle must be
+    // outside the swept radius. Crossing is continuous, including long drags.
+    const bluePlane=.29;
+    const blockedAt=gap(s)<clearance && s.tip>=bluePlane ? bluePlane+clearance : s.eye<eyeClearance && s.tip>=0 ? clearance : -Infinity;
+    if(next<blockedAt){
+      s.tip=Math.min(s.tip,blockedAt);s.tension=Math.min(1,s.tension-d);
+      return '线头顶住圈口了。再送一点线身，挪开蓝线，把绿圈撑大。';
+    }
+    s.tip=next;
+    if(s.tip<-.26){s.tip=-.48;s.escaped=true;s.tension=0;return 'A 的线头已经穿回圈口，三股绳分开了！';}
+    return '线头正在往圈里退，沿这个方向再送一点。';
+  }
+  s.tip=Math.min(.12,s.tip+d);
+  return '线头又往圈口靠近了。';
+}
+
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+const colors={A:['#743a2c','#b96549','#efac82'],B:['#374b3c','#658367','#b1c7a0'],C:['#304954','#547b8a','#9ec3cf']};
+const labels={tip:'A 头',body:'A 身',loop:'B 圈',cross:'C 压'};
+const axes={tip:normal,body:sideways,loop:spread,cross:sideways};
+const advice={tip:'把 A 线头朝圈里推。',body:'把 A 的线身朝圈口送，给圈边留出余量。',loop:'朝外拉 B 的圈边，让圈口变大。',cross:'沿圈面抬开 C 的压线。'};
+let state=fresh(), yaw=.79,pitch=.25,w=0,h=0,scale=1,marks=[],hit=[],grip=null,selected=null,hints=false,paint=0;
+const away={A:[-1.25,-.12,-.9],B:[.78,0,0],C:[0,1.0,.2]};
+function camera(){const a=Math.sin(yaw),b=Math.cos(yaw),c=Math.sin(pitch),d=Math.cos(pitch);return [[b,0,-a],[-a*c,d,-b*c],[a*d,c,b*d]];}
+function project(p,basis){return [w*.5+scale*dot(p,basis[0]),h*.48-scale*dot(p,basis[1]),dot(p,basis[2])];}
+function spline(points){
+  const result=[];
+  for(let i=0;i<points.length-1;i++){
+    const a=points[Math.max(0,i-1)],b=points[i],c=points[i+1],d=points[Math.min(i+2,points.length-1)];
+    for(let j=0;j<10;j++){
+      const t=j/10;
+      result.push(b.map((v,k)=>.5*(2*v+(-a[k]+c[k])*t+(2*a[k]-5*v+4*c[k]-d[k])*t*t+(-a[k]+3*v-3*c[k]+d[k])*t*t*t)));
+    }
+  }
+  return result.concat([points.at(-1)]);
+}
+function geometry(s){
+  const r=s.eye, f=s.feed;
+  const eye=[];
+  for(let i=0;i<=64;i++){
+    const t=-Math.PI/2+Math.PI*2*i/64;
+    eye.push([Math.cos(t)*r,Math.sin(t)*r,.18*i/64-.09]);
+  }
+  // The ends of the loop cross at its neck, at distinct depths.
+  const green=[...spline([[-1.76,-.72,-.26],[-.81,-.67,-.28],[0,-r,-.09]]),
+    ...eye.slice(1),...spline([[0,-r,.09],[.79,-.74,.28],[1.64,-1,.24]]).slice(1)];
+  const blue=spline([[-1.61,.42,-.70],[-1.02,.40+s.press,-.27],[-.62,.19+s.press,.28],
+    [0,.035+s.press,.29],[.65,.16+s.press,.29],[1.38,.65+s.press,-.35]]);
+  // Keep the segment through the eye straight. Slack appears as a bight
+  // behind the eye, where the hand feeds the standing part.
+  const axisX=Math.min(crossingOffset,Math.max(0,r-cordRadius*2));
+  const tip=[axisX,0,s.tip], neck=[axisX,0,Math.min(-.37,s.tip-.14)];
+  const bight=[-.57,-.92+.48*f,-.89-.29*f];
+  const red=[...spline([[-1.58,-.93,-1.23],[-.95,-.98-.40*f,-1.34],bight,neck]),
+    ...Array.from({length:20},(_,i)=>add(neck,mul(sub(tip,neck),(i+1)/20)))];
+  const strands={A:red,B:green,C:blue};
+  const handles={tip,body:bight,loop:[r,0,-.044],cross:[.65,.16+s.press,.29]};
+  if(s.escaped)for(const k of Object.keys(strands))strands[k]=strands[k].map(p=>add(p,away[k]));
+  return {strands,handles};
+}
+function line(a,b,width,color){
+  ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);
+  ctx.lineWidth=width;ctx.strokeStyle=color;ctx.stroke();
+}
+function invalidate(){if(!paint)paint=requestAnimationFrame(draw);}
+function draw(){
+  paint=0;
+  const {strands,handles}=geometry(state),basis=camera(),segments=[];
+  ctx.clearRect(0,0,w,h);
+  const light=ctx.createRadialGradient(w*.35,h*.29,5,w*.5,h*.43,Math.max(w,h)*.75);
+  light.addColorStop(0,'#f8efdb');light.addColorStop(1,'#d0bfa2');ctx.fillStyle=light;ctx.fillRect(0,0,w,h);
+  ctx.lineCap='round';
+  for(const [id,points] of Object.entries(strands)){
+    const p=points.map(q=>project(q,basis));
+    for(let i=1;i<p.length;i++)segments.push({id,a:p[i-1],b:p[i],i,z:(p[i-1][2]+p[i][2])*.5});
+  }
+  if(!state.escaped){
+    const p=project(handles.tip,basis); segments.push({id:'A',a:p,b:[p[0]+.01,p[1],p[2]],i:0,z:p[2],head:true});
+  }
+  hit=segments.sort((a,b)=>a.z-b.z);
+  for(const {id,a,b,i,head} of hit){
+    const [dark,base,lit]=colors[id], width=Math.max(5,scale*(head?headRadius:cordRadius)*2);
+    line(a,b,width+2,dark);line(a,b,width-1,base);
+    line([a[0]-.8,a[1]-1.8],[b[0]-.8,b[1]-1.8],width*.51,lit);
+    if(i%2===0){
+      const v=unit([b[0]-a[0],b[1]-a[1]]);
+      const x=(a[0]+b[0])*.5,y=(a[1]+b[1])*.5;
+      line([x-v[0]*2-v[1]*width*.33,y-v[1]*2+v[0]*width*.33],
+        [x+v[0]*2+v[1]*width*.33,y+v[1]*2-v[0]*width*.33],.9,dark+'aa');
+    }
+  }
+  marks=[];
+  if(!state.escaped){
+    const order=selected?[selected]:['tip','body','loop','cross'];
+    for(const id of order){
+      const p=project(handles[id],basis), offset={tip:[-27,-23],body:[-18,26],loop:[30,-13],cross:[20,26]}[id];
+      const x=clamp(p[0]+offset[0],24,w-24),y=clamp(p[1]+offset[1],24,h-24);
+      marks.push({id,x,y,p});
+      line(p,[x,y],1,'#544635');
+      ctx.beginPath();ctx.roundRect(x-20,y-12,40,24,8);ctx.fillStyle='#fff8e9';ctx.fill();
+      ctx.strokeStyle='#75644e';ctx.lineWidth=1;ctx.stroke();
+      ctx.font='bold 12px system-ui';ctx.textBaseline='middle';ctx.textAlign='center';ctx.fillStyle='#352c20';ctx.fillText(labels[id],x,y);
+      if(hints&&id===selected){
+        const dir=project(add(handles[id],mul(axes[id],id==='tip'?-1:1)),basis);
+        const d=unit(sub(dir.slice(0,2),p.slice(0,2)));
+        const a=[x,y-15],b=add(a,mul(d,34));
+        line(a,b,3,'#3b5745');
+        for(const side of [-1,1])line(b,add(sub(b,mul(d,9)),mul([-d[1],d[0]],side*5)),3,'#3b5745');
+      }
+    }
+  }
+}
+function resize(){
+  const box=canvas.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
+  w=box.width;h=box.height;scale=Math.min(w/4.45,h/3.65);
+  canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);
+  invalidate();
+}
+function select(id){
+  selected=id;
+  for(const b of document.querySelectorAll('[data-pick]'))b.setAttribute('aria-pressed',String(b.dataset.pick===id));
+  if(hints&&id)$('feedback').textContent=advice[id];
+  invalidate();
+}
+function nearest(x,y){
+  const label=marks.filter(m=>Math.hypot(x-m.x,y-m.y)<23).sort((a,b)=>Math.hypot(x-a.x,y-a.y)-Math.hypot(x-b.x,y-b.y))[0];
+  if(label)return label.id;
+  for(const s of [...hit].reverse()){
+    const a=s.a.slice(0,2),d=sub(s.b.slice(0,2),a),v=sub([x,y],a);
+    if(Math.hypot(...sub(v,mul(d,clamp(dot(v,d)/(dot(d,d)||1),0,1))))<10){
+      return s.id==='A'?(s.head||s.i>46?'tip':'body'):s.id==='B'?'loop':'cross';
+    }
+  }
+  return null;
+}
+canvas.addEventListener('pointerdown',e=>{
+  if(grip||e.button!==0)return;
+  const box=canvas.getBoundingClientRect(), x=e.clientX-box.left,y=e.clientY-box.top;
+  const id=state.escaped?null:nearest(x,y);
+  grip={pointer:e.pointerId,id,x:e.clientX,y:e.clientY};
+  canvas.setPointerCapture(e.pointerId);
+  if(id)select(id);
+});
+canvas.addEventListener('pointermove',e=>{
+  if(grip?.pointer!==e.pointerId)return;
+  const dx=e.clientX-grip.x,dy=e.clientY-grip.y;
+  grip.x=e.clientX;grip.y=e.clientY;
+  if(!grip.id){yaw+=dx*.009;pitch=clamp(pitch+dy*.008,-1.35,1.35);invalidate();return;}
+  const [right,up]=camera();
+  const axis=axes[grip.id];
+  const sx=dot(right,axis),sy=-dot(up,axis),visible=sx*sx+sy*sy;
+  if(visible<.09){$('feedback').textContent='这个方向几乎正对屏幕，转到侧面再拖。';return;}
+  const travel=(dx*sx+dy*sy)/(scale*Math.sqrt(visible));
+  if(Math.abs(travel)<.001)return;
+  const message=move(state,grip.id,travel);
+  if(message&&$('feedback').textContent!==message)$('feedback').textContent=message;
+  if(state.escaped){$('result').textContent='绳结已解开';select(null);}
+  invalidate();
+});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])canvas.addEventListener(name,e=>{
+  if(grip?.pointer===e.pointerId){grip=null;state.tension=0;invalidate();}
+});
+for(const b of document.querySelectorAll('[data-pick]'))b.onclick=()=>{
+  const id=b.dataset.pick;
+  if(state.escaped)return;
+  select(id);
+  const [right,up]=camera();
+  if(Math.hypot(dot(right,axes[id]),dot(up,axes[id]))<.50){yaw=.79;pitch=.25;invalidate();}
+};
+$('hint').onclick=()=>{hints=!hints;$('hint').setAttribute('aria-pressed',hints);if(hints&&!selected)select('body');else if(hints)$('feedback').textContent=advice[selected];invalidate();};
+$('reset-view').onclick=()=>{yaw=.79;pitch=.25;invalidate();};
+$('reset').onclick=()=>{state=fresh();grip=null;hints=false;$('hint').setAttribute('aria-pressed','false');select(null);$('reset-view').click();$('result').textContent='A 仍穿在圈里';$('feedback').textContent='沿着珊瑚色 A 看一看，它是从哪一面穿过绿圈的？';};
+$('help').onclick=()=>$('instructions').showModal();
+new ResizeObserver(resize).observe(canvas);
+resize();
+</script></body></html>
